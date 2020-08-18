@@ -4,9 +4,11 @@ import Navigation from '../Navigation';
 class MessagesPage extends React.Component {
     render() {
         return (
-            <div className="messages">
+            <div>
                 <Navigation />
-                <h1>Сообщения</h1>
+                <div className="page-container">
+                    <h2>Сообщения</h2>
+                </div>
             </div>
         )
     }

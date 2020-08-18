@@ -4,9 +4,11 @@ import Navigation from '../Navigation';
 class ManagersPage extends React.Component {
     render() {
         return (
-            <div className="managers">
+            <div>
                 <Navigation />
-                <h1>Менеджеры</h1>
+                <div className="page-container">
+                    <h2>Менеджеры</h2>
+                </div>
             </div>
         )
     }

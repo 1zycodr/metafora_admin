@@ -4,9 +4,11 @@ import Navigation from '../Navigation';
 class GroupsPage extends React.Component {
     render() {
         return (
-            <div className="groups">
+            <div>
                 <Navigation />
-                <h2>Группы рассылок</h2>
+                <div className="page-container">
+                    <h2>Группы рассылок</h2>
+                </div>
             </div>
         )
     }
