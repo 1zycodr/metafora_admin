@@ -111,7 +111,8 @@ a:hover {
 /* Page */
 .page-container {
   min-height: 100vh;
-  padding-left: 280px;
+  padding-left: 310px;
+  padding-top: 20px;
   transition: all .2s ease;
 }
 
@@ -138,6 +139,44 @@ tr {
   padding: 15px 10px;
   line-height: 1.3;
   vertical-align: middle;
+}
+
+#credentials {
+  line-height: 1.4rem;
+}
+
+p.submit {
+  text-align: left;
+  max-width: 100%;
+  margin-top: 20px;
+  padding: 1.5em 0;
+  margin: 5px 0;
+  border-bottom-left-radius: 3px;
+  border-bottom-right-radius: 3px;
+  border: none;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.button-primary {
+  background: #007cba;
+  border-color: #007cba;
+  color: #fff;
+  text-decoration: none;
+  text-shadow: none;
+  vertical-align: baseline;
+  display: inline-block;
+  font-size: 13px;
+  line-height: 2.15384615;
+  min-height: 30px;
+  margin: 0;
+  padding: 0 10px;
+  cursor: pointer;
+  border-width: 1px;
+  border-style: solid;
+  border-radius: 3px;
+  white-space: nowrap;
+  box-sizing: border-box;
 }
 
 .regular-text {
