@@ -80,7 +80,7 @@ ReactDOM.render(
         <Route exact path='/admin/groups' component={ GroupsPage }/>
         <Route exact path='/admin/settings' render={ (props) => <SettingsPage token={ TOKEN } 
           folderId={ GOOGLE_DRIVE_FOLDER_ID } authKey={ GOOGLE_DRIVE_AUTHENTICATION_KEY } adminEmail={ ADMIN_EMAIL }
-          groupAnswInterval={ GROUP_ANSWER_INTERVAL } managerAnswInterval={ MANAGER_ANSWER_INTERVAL }
+          groupAnswInterval={ GROUP_ANSWER_INTERVAL } managerAnswInterval={ MANAGER_ANSWER_INTERVAL } replicas={ BOT_REPLICAS }
           answTime={ BOT_ANSW_TIME } durationStart={ DURATION_START } {...props}/> }/>
       </Switch>
     </BrowserRouter>
