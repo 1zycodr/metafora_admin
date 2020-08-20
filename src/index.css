@@ -190,3 +190,206 @@ p.submit {
   line-height: 2;
   min-height: 30px;
 }
+
+.login form {
+  border: 3px solid #f1f1f1;
+}
+
+/* Full-width inputs */
+.password, .username {
+  width: 100%;
+  padding: 12px 20px;
+  margin: 8px 0;
+  display: inline-block;
+  border: 1px solid #ccc;
+  box-sizing: border-box;
+}
+
+/* Set a style for all buttons */
+.login {
+  background-color: #4CAF50;
+  color: white;
+  padding: 14px 20px;
+  margin: 8px 0;
+  border: none;
+  cursor: pointer;
+  width: 100%;
+}
+
+/* Add a hover effect for buttons */
+button:hover {
+  opacity: 0.8;
+}
+
+/* Extra style for the cancel button (red) */
+.cancelbtn {
+  width: auto;
+  padding: 10px 18px;
+  background-color: #f44336;
+}
+
+/* Center the avatar image inside this container */
+.imgcontainer {
+  text-align: center;
+  margin: 24px 0 12px 0;
+}
+
+/* Avatar image */
+img.avatar {
+  width: 40%;
+  border-radius: 50%;
+}
+
+/* Add padding to containers */
+.container {
+  padding: 16px;
+}
+
+/* The "Forgot password" text */
+span.psw {
+  float: right;
+  padding-top: 16px;
+}
+
+/* Replicas */
+.replica {
+  border: 1px solid grey;
+  border-radius: 5px;
+  padding: 5px;
+}
+
+.replica-text {
+  display: flex;
+  flex-direction: row;
+}
+
+.replica-text-title {
+  margin-right: 20px;
+}
+
+.replica-type {
+  display: flex;
+  flex-direction: row;
+}
+
+.replica-type-title {
+  margin-right: 32px;
+}
+
+.replica-remove button {
+  padding: 5px;
+  margin-top: 10px;
+  background-color: grey;
+  color: white;
+  border-radius: 5px;
+}
+
+.replicas-create {
+  padding: 5px;
+  margin-top: 10px;
+  margin-left: 5px;
+  background-color: black;
+  color: white;
+  border-radius: 5px;
+}
+
+.replica-create {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.replica-create-container {
+  width: 300px;
+  background-color: grey;
+  border-radius: 9px;
+  padding: 20px;
+}
+
+.replica-create-button {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.rcb-container {
+  width: 300px;
+  background-color: black;
+  border-radius: 9px;
+  padding: 20px;
+}
+
+.replica-buttons-button {
+  margin-left: 30px;
+  margin-bottom: 8px;
+}
+
+.rc-text, .rc-type, .rcb-text, .rcb-type {
+  display: flex;
+  align-items: center;
+  margin-top: 10px;
+}
+
+.rc-text input, .rcb-text input {
+  margin-top: -10px;
+  margin-left: 10px;
+  border-radius: 5px;
+  padding: 4px 10px;
+}
+
+.rc-buttons p, .rc-text p, .rc-type p, .rcb-text p, .rcb-type p, .rb-text-title, .rb-text-content, .rb-type-title, .rb-type-content {
+  color: white;
+}
+
+.rc-buttons-list {
+  margin-left: 30px;
+}
+
+.rc-type select, .rcb-type select {
+  margin-top: -15px;
+  margin-left: 22px;
+  border-radius: 5px;
+  padding: 2px 10px 4px;
+}
+
+.replica-create-hide, .replica-create-but, .rc-buttons-add, .rcb-hide, .rcb-create, .replica-button button{
+  margin-top: 40px;
+  margin-right: 10px;
+  padding: 5px;
+  border-radius: 5px;
+}
+
+.replica-button button {
+  margin-top: 0 !important;
+}
+
+.rb-text {
+  display: flex;
+}
+
+.rb-type {
+  display: flex;
+}
+
+.rb-text-title {
+  margin-right: 15px;
+}
+.rb-type-title {
+  margin-right: 26px;
+}
+
+.replica-button {
+  background-color: black;
+  margin-bottom: 10px;
+  border-radius: 10px;
+  padding-top: 10px;
+  padding-left: 10px;
+  padding-bottom: 10px;
+}
+
+.rc-buttons-add {
+  margin-top: 10px !important;
+  margin-bottom: -5px;
+}

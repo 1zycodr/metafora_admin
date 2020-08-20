@@ -6,6 +6,7 @@ import GroupsPage from './Components/GroupsPage/GroupsPage'
 import ManagersPage from './Components/ManagersPage/ManagersPage'
 import MessagesPage from './Components/MessagesPage/MessagesPage'
 import SettingsPage from './Components/SettingsPage/SettingsPage'
+import LoginPage from './Components/LoginPage/LoginPage'
 
 const TOKEN = 'test_token'
 const DURATION_START = 60
@@ -27,15 +28,15 @@ const GOOGLE_DRIVE_AUTHENTICATION_KEY = `{
   "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/chatbottelegram%40chatbot-282112.iam.gserviceaccount.com"
 }`
 const REPLICAS_TYPES = {
-  start: 'START',
-  with_buttons: 'BUTTONS'
+  without_buttons: 'Без кнопок',
+  with_buttons: 'С кнопками',
 }
 const BUTTON_TYPES = {
-  text: 'TEXT',
-  file: 'FILE'
+  text: 'Текстовая',
+  file: 'Файловая'
 }
 const BOT_REPLICAS = [
-  { text: 'Добрый день, я могу вам чем - нибудь помочь?', type: REPLICAS_TYPES.start },
+  { text: 'Добрый день, я могу вам чем - нибудь помочь?', type: REPLICAS_TYPES.without_buttons },
   { 
     text: 'Выберите ваш город', 
     type: REPLICAS_TYPES.with_buttons, 
@@ -75,6 +76,7 @@ ReactDOM.render(
   <React.StrictMode>
     <BrowserRouter>
       <Switch>
+        <Route exact path='/admin/login' component={ LoginPage }/>
         <Route exact path='/admin/messages' component={ MessagesPage }/>
         <Route exact path='/admin/managers' component={ ManagersPage }/>
         <Route exact path='/admin/groups' component={ GroupsPage }/>

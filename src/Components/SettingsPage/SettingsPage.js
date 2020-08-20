@@ -1,14 +1,6 @@
 import React from 'react';
 import Navigation from '../Navigation';
-
-const REPLICAS_TYPES = {
-    start: 'START',
-    with_buttons: 'BUTTONS'
-}
-const BUTTON_TYPES = {
-text: 'TEXT',
-file: 'FILE'
-}
+import Replicas from './Replicas';
 
 function SettingsPage (props) {
     return (
@@ -19,6 +11,10 @@ function SettingsPage (props) {
                 <form action="" noValidate="novalidate">
                     <table className="form-table" role="presentation">
                         <tbody>
+                            <tr>
+                                <th scope="row"><label htmlFor="replicas">Реплики бота</label></th>
+                                <td><Replicas replicas={ props.replicas } /></td>
+                            </tr>
                             <tr>
                                 <th scope="row"><label htmlFor="token">Токен телеграмм бота</label></th>
                                 <td><input name="token" type="text" id="token" defaultValue={ props.token } className="regular-text"/></td>
