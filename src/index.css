@@ -20,6 +20,10 @@ body {
   margin: 0;
 }
 
+p {
+  margin: 0;
+}
+
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
@@ -392,4 +396,56 @@ span.psw {
 .rc-buttons-add {
   margin-top: 10px !important;
   margin-bottom: -5px;
+}
+
+.groups-table {
+  width: 80%;
+}
+
+.gt-row th, .gt-row td {
+  border: 1px solid black;
+  background-color: grey;
+  text-align: center;
+  align-items: center;
+  color: white;
+  padding: 15px;
+}
+
+.df {
+  float: inherit;
+}
+
+.gt-edit {
+  background-color: black;
+  color: white;
+  padding: 5px 10px;
+  margin-top: 5px;
+  border-radius: 5px;
+}
+
+.edit-city {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.edit-city-container {
+  width: 300px;
+  background-color: grey;
+  border-radius: 9px;
+  padding: 20px;
+}
+
+.manager {
+  display: flex;
+  width: 100%;
+}
+
+.remove-manager {
+  padding: 4px 10px;
+  color: white;
+  background-color: black;
+  border-radius: 5px;
+  margin-left: 20px;
 }

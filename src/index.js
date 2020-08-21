@@ -72,6 +72,23 @@ const BOT_REPLICAS = [
   }
 ]
 
+const managers = [
+  { name : 'manager_1', groups : [true, false, false] },
+  { name : 'manager_2', groups : [false, true, false] },
+  { name : 'manager_3', groups : [false, false, true] },
+  { name : 'manager_4', groups : [true, true, false] },
+  { name : 'manager_5', groups : [true, false, true] },
+  { name : 'manager_6', groups : [false, true, true] },
+  { name : 'manager_7', groups : [true, true, true] },
+  { name : 'manager_8', groups : [false, false, false]},
+]
+
+const cities = [
+  'Город 1',
+  'Город 2',
+  'Город 3'
+]
+
 ReactDOM.render(
   <React.StrictMode>
     <BrowserRouter>
@@ -79,11 +96,12 @@ ReactDOM.render(
         <Route exact path='/admin/login' component={ LoginPage }/>
         <Route exact path='/admin/messages' component={ MessagesPage }/>
         <Route exact path='/admin/managers' component={ ManagersPage }/>
-        <Route exact path='/admin/groups' component={ GroupsPage }/>
+        <Route exact path='/admin/groups' render={ (props) => <GroupsPage managers={ managers } cities={ cities }/> }/>
         <Route exact path='/admin/settings' render={ (props) => <SettingsPage token={ TOKEN } 
           folderId={ GOOGLE_DRIVE_FOLDER_ID } authKey={ GOOGLE_DRIVE_AUTHENTICATION_KEY } adminEmail={ ADMIN_EMAIL }
           groupAnswInterval={ GROUP_ANSWER_INTERVAL } managerAnswInterval={ MANAGER_ANSWER_INTERVAL } replicas={ BOT_REPLICAS }
-          answTime={ BOT_ANSW_TIME } durationStart={ DURATION_START } {...props}/> }/>
+          answTime={ BOT_ANSW_TIME } durationStart={ DURATION_START } {...props}/> }
+        />
       </Switch>
     </BrowserRouter>
   </React.StrictMode>,
