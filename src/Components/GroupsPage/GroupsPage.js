@@ -22,9 +22,8 @@ class GroupsPage extends React.Component {
     showEdit(e) {
         this.setState({
             showEdit : !this.state.showEdit,
-            editIndex : !this.state.showEdit ? parseInt(e.target.dataset.id) : null
+            editIndex : !this.state.showEdit ? parseInt(e.target.dataset.id, 10) : null
         })
-        setTimeout(() => { console.log(this.state.editIndex, this.state.showEdit)}, 1000)
     }
 
     editCity(e) {
@@ -38,9 +37,8 @@ class GroupsPage extends React.Component {
     }
 
     changeManagerStatus(e) {
-        console.log(e.target.dataset)
         let managers = this.state.managers
-        managers[parseInt(e.target.dataset.index)].groups[parseInt(e.target.dataset.group)] = !managers[parseInt(e.target.dataset.index)].groups[parseInt(e.target.dataset.group)]
+        managers[parseInt(e.target.dataset.index, 10)].groups[parseInt(e.target.dataset.group, 10)] = !managers[parseInt(e.target.dataset.index, 10)].groups[parseInt(e.target.dataset.group, 10)]
         this.setState({
             managers : managers
         })
@@ -48,7 +46,7 @@ class GroupsPage extends React.Component {
 
     removeManager(e) {
         let managers = this.state.managers
-        delete managers[parseInt(e.target.dataset.index)]
+        delete managers[parseInt(e.target.dataset.index, 10)]
         this.setState({
             managers : managers
         })
@@ -81,7 +79,7 @@ class GroupsPage extends React.Component {
                         </thead>
                         <tbody>
                             { this.state.managers.map(
-                                (manager, index) => <Manager name={ manager.name } groups={ manager.groups } key={ index } 
+                                (manager, index) => <Manager username={ manager.username } groups={ manager.groups } key={ index } 
                                     onChange={ this.changeManagerStatus } id={ index } remove={ this.removeManager }/>
                             ) }
                         </tbody>

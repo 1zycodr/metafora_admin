@@ -5,7 +5,7 @@ class Manager extends React.Component {
         return (
             <tr className="gt-row">
                 <td className="manager">
-                    <p>{ this.props.name }</p>
+                    <p>{ this.props.username }</p>
                     <button className="remove-manager" type="button" onClick={ this.props.remove } data-index={ this.props.id }>Удалить</button>
                 </td>
                 <td>

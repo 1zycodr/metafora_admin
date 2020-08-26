@@ -398,11 +398,11 @@ span.psw {
   margin-bottom: -5px;
 }
 
-.groups-table {
+.groups-table, .managers-table, .messages-table {
   width: 80%;
 }
 
-.gt-row th, .gt-row td {
+.gt-row th, .gt-row td, .mt-row th, .mt-row td {
   border: 1px solid black;
   background-color: grey;
   text-align: center;
@@ -432,9 +432,28 @@ span.psw {
 
 .edit-city-container {
   width: 300px;
-  background-color: grey;
+  background-color: black;
   border-radius: 9px;
   padding: 20px;
+}
+
+.edit-city-title {
+  color: white;
+}
+
+.edit-city-val {
+  margin: 10px 0px;
+  border-radius: 5px;
+  padding: 2px 5px;
+  width: 100%;
+}
+
+.edit-city-cancel {
+  margin-right: 20%;
+}
+.edit-city-cancel, .edit-city-save {
+  margin-bottom: 5px;
+  width: 40%;
 }
 
 .manager {

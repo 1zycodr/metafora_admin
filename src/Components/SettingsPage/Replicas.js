@@ -47,7 +47,7 @@ class Replicas extends React.Component {
 
     removeReplica(event) {
         let replicas = this.state.replicas
-        replicas.splice(parseInt(event.target.dataset.id), 1)
+        replicas.splice(parseInt(event.target.dataset.id, 10), 1)
         this.setState({
             replicas : replicas
         })

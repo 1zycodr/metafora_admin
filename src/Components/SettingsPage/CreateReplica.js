@@ -55,8 +55,8 @@ class CreateReplica extends React.Component {
 
     removeButton(e) {
         let buttons = this.state.buttons
-        console.log(parseInt(e.target.dataset.id))
-        buttons.splice(parseInt(e.target.dataset.id), 1)
+        console.log(parseInt(e.target.dataset.id, 10))
+        buttons.splice(parseInt(e.target.dataset.id, 10), 1)
         this.setState({ buttons : buttons })
     }
 

@@ -10,10 +10,6 @@ const REPLICAS_TYPES = {
     without_buttons: 'Без кнопок',
     with_buttons: 'С кнопками',
 }
-const BUTTON_TYPES = {
-    text: 'Текстовая',
-    file: 'Файловая'
-}
 
 function Replica (props) {
     const replica = props.data;

@@ -73,14 +73,14 @@ const BOT_REPLICAS = [
 ]
 
 const managers = [
-  { name : 'manager_1', groups : [true, false, false] },
-  { name : 'manager_2', groups : [false, true, false] },
-  { name : 'manager_3', groups : [false, false, true] },
-  { name : 'manager_4', groups : [true, true, false] },
-  { name : 'manager_5', groups : [true, false, true] },
-  { name : 'manager_6', groups : [false, true, true] },
-  { name : 'manager_7', groups : [true, true, true] },
-  { name : 'manager_8', groups : [false, false, false]},
+  { name: 'm1_name', surname: 'm1_surname', username : 'manager_1', date: '26.08.20', status: 'status', groups : [true, false, false] },
+  { name: 'm2_name', surname: 'm2_surname', username : 'manager_2', date: '26.08.20', status: 'status', groups : [false, true, false] },
+  { name: 'm3_name', surname: 'm3_surname', username : 'manager_3', date: '26.08.20', status: 'status', groups : [false, false, true] },
+  { name: 'm4_name', surname: 'm4_surname', username : 'manager_4', date: '26.08.20', status: 'status', groups : [true, true, false] },
+  { name: 'm5_name', surname: 'm5_surname', username : 'manager_5', date: '26.08.20', status: 'status', groups : [true, false, true] },
+  { name: 'm6_name', surname: 'm6_surname', username : 'manager_6', date: '26.08.20', status: 'status', groups : [false, true, true] },
+  { name: 'm7_name', surname: 'm7_surname', username : 'manager_7', date: '26.08.20', status: 'status', groups : [true, true, true] },
+  { name: 'm8_name', surname: 'm8_surname', username : 'manager_8', date: '26.08.20', status: 'status', groups : [false, false, false]},
 ]
 
 const cities = [
@@ -95,7 +95,7 @@ ReactDOM.render(
       <Switch>
         <Route exact path='/admin/login' component={ LoginPage }/>
         <Route exact path='/admin/messages' component={ MessagesPage }/>
-        <Route exact path='/admin/managers' component={ ManagersPage }/>
+        <Route exact path='/admin/managers' render={ (props) => <ManagersPage managers={ managers }/> } />
         <Route exact path='/admin/groups' render={ (props) => <GroupsPage managers={ managers } cities={ cities }/> }/>
         <Route exact path='/admin/settings' render={ (props) => <SettingsPage token={ TOKEN } 
           folderId={ GOOGLE_DRIVE_FOLDER_ID } authKey={ GOOGLE_DRIVE_AUTHENTICATION_KEY } adminEmail={ ADMIN_EMAIL }
