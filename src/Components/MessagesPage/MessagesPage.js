@@ -11,8 +11,8 @@ class MessagesPage extends React.Component {
                     <table className="messages-table">
                         <thead>
                             <tr className="mt-row">
-                                <th><h5>Сообщения</h5></th>
-                                <th></th>
+                                <th><h5>Комната</h5></th>
+                                <th>Статус</th>
                             </tr>
                         </thead>
                         <tbody></tbody>
