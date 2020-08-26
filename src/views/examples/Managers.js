@@ -1,7 +1,7 @@
 import React from 'react';
 
 // reactstrap components
-import { Card, Container, Row, CardHeader } from "reactstrap";
+import { Card, Container, Row, CardHeader, Table } from "reactstrap";
 // core components
 import Header from "components/Headers/Header.js";
 import Manager from "components/ManagersPage/Manager.js"
@@ -45,7 +45,7 @@ class Managers extends React.Component {
               <Card className="shadow">
                 <CardHeader className="border-0">
                 <h2>Менеджеры</h2>
-                    <table className="align-items-center table-flush" responsive>
+                    <Table className="align-items-center table-flush" responsive>
                         <thead>
                             <tr className="mt-row">
                                 <th><h5>Менеджер</h5></th>
@@ -68,7 +68,7 @@ class Managers extends React.Component {
                                 
                             }
                         </tbody>
-                    </table>
+                    </Table>
                 </CardHeader>
               </Card>
             </div>
