@@ -7,7 +7,16 @@
     width: 100%;
 }
 .dragDropContext {
-    /* width: 100%; */
     float: left;
     border: 1px solid #c9c9c9;
+}
+.dragDropHorisontContext{
+    width: 100%;
+    background: lightgrey;
+    display: flex;
+    padding: 15px;
+    overflow: auto;
+}
+.draggableContext {
+    float: left;
 }

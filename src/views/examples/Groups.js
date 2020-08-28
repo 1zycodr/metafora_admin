@@ -50,7 +50,7 @@ class Groups extends React.Component {
     this.getGroups = this.getGroups.bind(this);
   }
   componentWillMount() {
-    timer(2000).subscribe(this.getGroups)
+    timer(500).subscribe(this.getGroups)
   }
   getGroups() {
     const result = { first: [], last: [] };

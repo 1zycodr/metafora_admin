@@ -40,6 +40,14 @@ class DragTableGroup extends React.Component {
       width: 250
     }
   }
+  getHorizontListStyle(isDraggingOver) {
+    return {
+      background: isDraggingOver ? 'lightblue' : 'lightgrey',
+      display: 'flex',
+      padding: 15,
+      overflow: 'auto',
+    }
+  }
   move(source, destination, droppableSource, droppableDestination) {
     const sourceClone = Array.from(source[0].parent);
     const destClone = Array.from(destination[0].parent);
@@ -89,11 +97,75 @@ class DragTableGroup extends React.Component {
       return false
     })
   }
+  moveRoot(result) {
+    const { source, destination, draggableId } = result;
+    const groupID = parseInt(draggableId.replace(/\D+/,''), 10)
+    // Смена групп местами
+    if(source.droppableId === destination.droppableId){
+      const groups = this.reorder(
+          this.state.groups,
+          source.index,
+          destination.index
+      );
+      this.setState({ groups });
+      return
+    }
+    // Из дочернего в родительский
+    if(destination.droppableId === 'root') {
+      let newgroup = false;
+      const sourceId = parseInt(source.droppableId.replace(/\D+/,''), 10)
+      const groups = this.state.groups.map(group => {
+        if(group.id === sourceId) {
+          [newgroup] = group.parent.splice(source.index, 1);
+        }
+        return group;
+      });
+      if(newgroup){
+        newgroup.parentID = 0;
+        groups.push(newgroup)
+      }
+      this.setState({ groups });
+      return
+    }
+    // Из родительской в дочерний
+    if(source.droppableId === 'root') {
+      const moveId = parseInt(destination.droppableId.replace(/\D+/,''), 10)
+      if(moveId === groupID) {
+        return;
+      }
+      console.log("Из родительской в дочерний",result, groupID, moveId)
+      const sourceClone = Array.from(this.state.groups);
+      const childs = this.getList(destination.droppableId)
+      const destClone = Array.from(childs[0].parent);
+      const [removed] = sourceClone.splice(source.index, 1);
+      destClone.splice(destination.index, 0, removed);
+      const groups = sourceClone.map(group => {
+        if(group.id === moveId) {
+          const parent = destClone.map(item => ({...item, parentID: moveId}))
+          group.parent = parent;
+        }
+        return group;
+      });
+      this.setState({ groups });
+      return;
+    }
+  }
   onDragEnd(result) {
     const { source, destination } = result;
+    if(source.droppableId === 'root') {
+      if (!destination) {
+        return;
+      }
+      this.moveRoot(result);
+      return;
+    }
     // dropped outside the list
     if (!destination) {
       this.exitGroup(source)
+      return;
+    }
+    if(destination.droppableId === 'root') {
+      this.moveRoot(result);
       return;
     }
     if (source.droppableId === destination.droppableId) {
@@ -122,8 +194,46 @@ class DragTableGroup extends React.Component {
     }
   }
   render() {
+    // const root = 
     return (
       <DragDropContext onDragEnd={this.onDragEnd}>
+        <Droppable key="root" droppableId="root" direction="horizontal">
+          {(provided, snapshot) => (
+            <div className="dragDropHorisontContext"
+              {...provided.droppableProps}
+              ref={provided.innerRef}
+              style={this.getHorizontListStyle(snapshot.isDraggingOver)}
+            >
+              <Card className="shadow col">
+                <CardHeader className="border-1">
+                  <h3 className="mb-0">Родительские группы</h3>
+                </CardHeader>
+                <CardBody>
+                  {this.state.groups.filter(group => (group.parentID === 0)).map((item, index) => (
+                    <Draggable key={`item-${item.id}`} draggableId={`item-${item.id}`} index={index}>
+                      {(provided, snapshot) => (
+                        <div
+                          className="draggableContext col-2"
+                          ref={provided.innerRef}
+                          {...provided.draggableProps}
+                          {...provided.dragHandleProps}
+                          // style={this.getItemStyle(snapshot.isDragging, provided.draggableProps.style)}
+                        >
+                          <Card className="card-stats mb-4 mb-xl-0">
+                            <CardHeader className="border-0">
+                              <h3 className="mb-0">{item.title}</h3>
+                            </CardHeader>
+                          </Card>
+                        </div>
+                      )}
+                    </Draggable>
+                  ))}
+                </CardBody>
+              </Card>
+              {provided.placeholder}
+            </div>
+          )}
+        </Droppable>
         {this.state.groups.map((group, index) => (
           <Droppable key={`droppable-${group.id}`} droppableId={`droppable-${group.id}`}>
             {(provided, snapshot) => (
