@@ -6,6 +6,19 @@ import {
   Card,
   CardHeader,
   CardBody,
+  UncontrolledDropdown,
+  DropdownToggle,
+  DropdownMenu,
+  DropdownItem,
+  Col,
+  Row,
+  Modal,
+  ModalHeader,
+  ModalBody,
+  ModalFooter,
+  FormGroup,
+  Button,
+  Input,
 } from "reactstrap";
 
 class DragTableGroup extends React.Component {
@@ -13,11 +26,19 @@ class DragTableGroup extends React.Component {
     super(props)
     this.state = {
       groups: this.props.groups,
+      modal: false,
+      newTitle: "",
     }
     this.onDragEnd = this.onDragEnd.bind(this);
     this.getList = this.getList.bind(this);
+    this.toggle = this.toggle.bind(this);
+    this.changeTitle = this.changeTitle.bind(this);
+    this.createGroup = this.createGroup.bind(this);
+    
   }
-  
+  toggle() {
+    this.setState({ modal: !this.state.modal })
+  }
   getItemStyle(isDragging, draggableStyle) {
     return {
       // some basic styles to make the items look a bit nicer
@@ -188,14 +209,64 @@ class DragTableGroup extends React.Component {
           source,
           destination
       );
-      console.log('groups', groups)
       this.setState({ groups });
     }
   }
+  changeTitle(e) {
+    this.setState({ newTitle: e.target.value });
+  }
+  createGroup() {
+    const { newTitle, groups } = this.state;
+    let id = 0;
+    if(newTitle.length > 0) {
+      for(const group of groups) {
+        if(group.title === newTitle) {
+          id = 0
+          return
+        }
+        if(group.id > id) {
+          id = group.id;
+        }
+        for(const parent of group.parent) { 
+          if(parent.id > id) {
+            id = parent.id;
+          }
+        }
+      };
+    }
+    if(id > 0) {
+      groups.push({ id:id+1, parent:[], parentID:0,	name: `newGroup${id+1}`,	title: newTitle, view: 1,	date: "2020-08-19 05:12:30",	status: 1 })
+    }
+    this.setState({ newTitle: "", modal: false, groups});
+  }
   render() {
-    // const root = 
+    const { modal, newTitle } = this.state;
     return (
       <DragDropContext onDragEnd={this.onDragEnd}>
+        <Modal isOpen={modal} toggle={this.toggle}>
+          <ModalHeader toggle={this.toggle}>Новая группа</ModalHeader>
+          <ModalBody>
+            <FormGroup>
+              <label
+                className="form-control-label"
+                htmlFor="input-username"
+              >
+                Название новой группы
+              </label>
+              <Input
+                className="form-control-alternative"
+                value={newTitle}
+                onChange={this.changeTitle}
+                placeholder="Введите название новой группы"
+                type="text"
+              />
+            </FormGroup>
+          </ModalBody>
+          <ModalFooter>
+            <Button color="primary" onClick={this.createGroup}>Создать</Button>{' '}
+            <Button color="secondary" onClick={this.toggle}>Отмена</Button>
+          </ModalFooter>
+        </Modal>
         <Droppable key="root" droppableId="root" direction="horizontal">
           {(provided, snapshot) => (
             <div className="dragDropHorisontContext"
@@ -205,7 +276,33 @@ class DragTableGroup extends React.Component {
             >
               <Card className="shadow col">
                 <CardHeader className="border-1">
-                  <h3 className="mb-0">Родительские группы</h3>
+                  <Row>
+                    <Col className="col-11">
+                      <h3 className="mb-0">Родительские группы</h3>
+                    </Col>
+                    <Col className="text-right col-1">
+                      <UncontrolledDropdown>
+                        <DropdownToggle
+                          className="btn-icon-only text-light"
+                          href="#pablo"
+                          role="button"
+                          size="sm"
+                          color=""
+                          onClick={e => e.preventDefault()}
+                        >
+                          <i className="fas fa-ellipsis-v" />
+                        </DropdownToggle>
+                        <DropdownMenu className="dropdown-menu-arrow" right>
+                          <DropdownItem
+                            href="#pablo"
+                            onClick={this.toggle}
+                          >
+                            Добавить новую группу
+                          </DropdownItem>
+                        </DropdownMenu>
+                      </UncontrolledDropdown>
+                    </Col>
+                  </Row>
                 </CardHeader>
                 <CardBody>
                   {this.state.groups.filter(group => (group.parentID === 0)).map((item, index) => (
