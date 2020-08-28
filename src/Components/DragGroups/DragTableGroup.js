@@ -133,7 +133,6 @@ class DragTableGroup extends React.Component {
       if(moveId === groupID) {
         return;
       }
-      console.log("Из родительской в дочерний",result, groupID, moveId)
       const sourceClone = Array.from(this.state.groups);
       const childs = this.getList(destination.droppableId)
       const destClone = Array.from(childs[0].parent);
