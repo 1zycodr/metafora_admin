@@ -33,12 +33,12 @@ import { timer, from } from "rxjs";
 import { groupBy, map, mergeMap, reduce } from 'rxjs/operators';
 
 const allgroups = [
-  { id:1,	parentID:0,	name: "almaty",	title: "Алматы", view: 1,	date: "2020-08-19 05:12:30",	status: 1 },
-  { id:2,	parentID:1,	name: "managers_one",	title: "Менеджеры 1",	view: 0,	date: "2020-08-19 05:12:30",	status: 1 },
-  { id:3,	parentID:1,	name: "managers_two",	title: "Менеджеры 2",	view: 0,	date: "2020-08-19 05:12:30",	status: 1 },
-  { id:5,	parentID:4,	name: "managers_tree",	title: "Менеджеры 3",	view: 0,	date: "2020-08-19 05:12:30",	status: 1 },
-  { id:6,	parentID:4,	name: "managers_four",	title: "Менеджеры 4",	view: 0,	date: "2020-08-19 05:12:30",	status: 1 },
-  { id:4,	parentID:0,	name: "kustanay",	title: "Кустанай", view: 1,	date: "2020-08-19 05:12:30",	status: 1 },
+  { id:1,	parentID:0,	name: "almaty",	title: "Алматы", view: 1,	date: "2020-08-19 05:12:30",	status: 1, managers: [1, 4, 5] },
+  { id:2,	parentID:1,	name: "managers_one",	title: "Менеджеры 1",	view: 0,	date: "2020-08-19 05:12:30",	status: 1, managers: [] },
+  { id:3,	parentID:1,	name: "managers_two",	title: "Менеджеры 2",	view: 0,	date: "2020-08-19 05:12:30",	status: 1, managers: [] },
+  { id:5,	parentID:4,	name: "managers_tree",	title: "Менеджеры 3",	view: 0,	date: "2020-08-19 05:12:30",	status: 1, managers: [] },
+  { id:6,	parentID:4,	name: "managers_four",	title: "Менеджеры 4",	view: 0,	date: "2020-08-19 05:12:30",	status: 1, managers: [] },
+  { id:4,	parentID:0,	name: "kustanay",	title: "Кустанай", view: 1,	date: "2020-08-19 05:12:30",	status: 1, managers: [] },
 ];
 class Groups extends React.Component {
   constructor(props) {

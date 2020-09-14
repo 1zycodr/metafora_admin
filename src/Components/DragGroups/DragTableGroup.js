@@ -12,32 +12,41 @@ import {
   DropdownItem,
   Col,
   Row,
-  Modal,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
-  FormGroup,
   Button,
-  Input,
+  Badge,
+  Alert
 } from "reactstrap";
+import EditGroup from './EditGroup';
+import moment from 'moment';
 
+const defaultGroup = {
+  id: 0,
+  parent: [],
+  parentID: 0,
+  name: 'group',
+  title: '',
+  view: false,
+  date: moment().format('YYYY-MM-DD HH-mm-ss'),
+  managers: [],
+}
 class DragTableGroup extends React.Component {
   constructor(props) {
     super(props)
     this.state = {
+      alert: { open: false, color: 'danger', title: ''},
       groups: this.props.groups,
       modal: false,
-      newTitle: "",
+      selectGroup: defaultGroup,
     }
     this.onDragEnd = this.onDragEnd.bind(this);
     this.getList = this.getList.bind(this);
     this.toggle = this.toggle.bind(this);
-    this.changeTitle = this.changeTitle.bind(this);
-    this.createGroup = this.createGroup.bind(this);
-    
+    this.changeGroup = this.changeGroup.bind(this);
+    this.saveGroup = this.saveGroup.bind(this);
+    this.closeAlert = this.closeAlert.bind(this);
   }
   toggle() {
-    this.setState({ modal: !this.state.modal })
+    this.setState({ modal: !this.state.modal, selectGroup: defaultGroup })
   }
   getItemStyle(isDragging, draggableStyle) {
     return {
@@ -58,7 +67,7 @@ class DragTableGroup extends React.Component {
     return {
       background: isDraggingOver ? "lightblue" : "lightgrey",
       padding: 15,
-      width: 250
+      width: '33.33%',
     }
   }
   getHorizontListStyle(isDraggingOver) {
@@ -212,61 +221,64 @@ class DragTableGroup extends React.Component {
       this.setState({ groups });
     }
   }
-  changeTitle(e) {
-    this.setState({ newTitle: e.target.value });
+  changeGroup(group) {
+    this.setState({ selectGroup: group, modal: true });
   }
-  createGroup() {
-    const { newTitle, groups } = this.state;
-    let id = 0;
-    if(newTitle.length > 0) {
-      for(const group of groups) {
-        if(group.title === newTitle) {
-          id = 0
-          return
+  saveGroup(group) {
+    if(group.id) {
+      this.setState({ modal: false });
+    } else {
+      const { groups } = this.state;
+      groups.forEach(item => {
+        if(item.id > group.id) {
+          group.id = item.id
         }
-        if(group.id > id) {
-          id = group.id;
+        item.parent.forEach(child => {
+          if(child.id > group.id) {
+            group.id = child.id
+          } 
+        })
+      })
+      group.id = group.id + 1;
+      groups.push(group);
+      console.log(groups, group);
+      this.setState({ modal: false, groups, selectGroup: defaultGroup });
+    }
+  }
+  deleteGroup(group) {
+    console.log(group)
+    if(group.parent.length > 0) {
+      this.setState({alert:{ open: true, color: 'danger', title: 'Нельзя удалить группу с подгруппами'}})
+      return
+    }
+    const groups = this.state.groups.filter(item => {
+        if(item.id === group.id) {
+          return false;
         }
-        for(const parent of group.parent) { 
-          if(parent.id > id) {
-            id = parent.id;
+        item.parent = item.parent.filter(child => {
+          if(child.id === group.id) {
+            return false;
           }
-        }
-      };
-    }
-    if(id > 0) {
-      groups.push({ id:id+1, parent:[], parentID:0,	name: `newGroup${id+1}`,	title: newTitle, view: 1,	date: "2020-08-19 05:12:30",	status: 1 })
-    }
-    this.setState({ newTitle: "", modal: false, groups});
+          return true;
+        })
+        return true;
+      })
+    this.setState({ modal: false, groups })
+  }
+  closeAlert(){
+    this.setState({alert:{ open: false, color: 'danger', title: ''}})
   }
   render() {
-    const { modal, newTitle } = this.state;
+    const { modal, selectGroup, alert:{ open, color, title} } = this.state;
     return (
       <DragDropContext onDragEnd={this.onDragEnd}>
-        <Modal isOpen={modal} toggle={this.toggle}>
-          <ModalHeader toggle={this.toggle}>Новая группа</ModalHeader>
-          <ModalBody>
-            <FormGroup>
-              <label
-                className="form-control-label"
-                htmlFor="input-username"
-              >
-                Название новой группы
-              </label>
-              <Input
-                className="form-control-alternative"
-                value={newTitle}
-                onChange={this.changeTitle}
-                placeholder="Введите название новой группы"
-                type="text"
-              />
-            </FormGroup>
-          </ModalBody>
-          <ModalFooter>
-            <Button color="primary" onClick={this.createGroup}>Создать</Button>{' '}
-            <Button color="secondary" onClick={this.toggle}>Отмена</Button>
-          </ModalFooter>
-        </Modal>
+        <EditGroup 
+          modal={modal}
+          toggle={this.toggle}
+          group={selectGroup}
+          saveGroup={this.saveGroup}
+        />
+        <Alert color={color} isOpen={open} toggle={this.closeAlert}>{title}</Alert>
         <Droppable key="root" droppableId="root" direction="horizontal">
           {(provided, snapshot) => (
             <div className="dragDropHorisontContext"
@@ -281,26 +293,13 @@ class DragTableGroup extends React.Component {
                       <h3 className="mb-0">Родительские группы</h3>
                     </Col>
                     <Col className="text-right col-1">
-                      <UncontrolledDropdown>
-                        <DropdownToggle
-                          className="btn-icon-only text-light"
-                          href="#pablo"
-                          role="button"
-                          size="sm"
-                          color=""
-                          onClick={e => e.preventDefault()}
-                        >
-                          <i className="fas fa-ellipsis-v" />
-                        </DropdownToggle>
-                        <DropdownMenu className="dropdown-menu-arrow" right>
-                          <DropdownItem
-                            href="#pablo"
-                            onClick={this.toggle}
-                          >
-                            Добавить новую группу
-                          </DropdownItem>
-                        </DropdownMenu>
-                      </UncontrolledDropdown>
+                      <Button 
+                        color="success"
+                        onClick={this.toggle}
+                        style={{borderRadius: '50%'}}
+                        size="sm">
+                          <i className="ni ni-fat-add" />
+                        </Button>
                     </Col>
                   </Row>
                 </CardHeader>
@@ -309,7 +308,7 @@ class DragTableGroup extends React.Component {
                     <Draggable key={`item-${item.id}`} draggableId={`item-${item.id}`} index={index}>
                       {(provided, snapshot) => (
                         <div
-                          className="draggableContext col-2"
+                          className="draggableContext col-3"
                           ref={provided.innerRef}
                           {...provided.draggableProps}
                           {...provided.dragHandleProps}
@@ -340,7 +339,45 @@ class DragTableGroup extends React.Component {
               >
                 <Card className="shadow">
                   <CardHeader className="border-0">
-                    <h3 className="mb-0">{group.title}</h3>
+                    <Row>
+                      <Col className="col-10">
+                        <h3 className="mb-0">{group.title}</h3>
+                      </Col>
+                      <Col className="text-right col-2">
+                        <UncontrolledDropdown>
+                          <DropdownToggle
+                            className="btn-icon-only text-light"
+                            href="#menu"
+                            role="button"
+                            size="sm"
+                            color=""
+                            onClick={e => e.preventDefault()}
+                          >
+                            <i className="fas fa-ellipsis-v" />
+                          </DropdownToggle>
+                          <DropdownMenu className="dropdown-menu-arrow" right>
+                            <DropdownItem
+                              onClick={() => this.changeGroup(group)}
+                            >
+                              Изменить группу
+                            </DropdownItem>
+                            <DropdownItem
+                              onClick={() => this.deleteGroup(group)}
+                            >
+                              Удалить группу
+                            </DropdownItem>
+                          </DropdownMenu>
+                        </UncontrolledDropdown>
+                      </Col>
+                    </Row>
+                    <Row>
+                      <Col className="col-6">
+                        {group.view ? <Badge color="success" pill>Публичная</Badge> : <Badge color="light" pill>Приватная</Badge>}
+                      </Col>
+                      <Col className="col-6">
+                        <Badge color="primary" pill>Менеджеров {group.managers.length}</Badge>
+                      </Col>
+                    </Row>
                   </CardHeader>
                   <CardBody className="pt-0 pt-md-4">
                     {group.parent.map((item, index) => (
@@ -354,7 +391,45 @@ class DragTableGroup extends React.Component {
                           >
                             <Card className="shadow">
                               <CardHeader className="border-0">
-                                <h3 className="mb-0">{item.title}</h3>
+                                <Row>
+                                  <Col className="col-10">
+                                    <h3 className="mb-0">{item.title}</h3>
+                                  </Col>
+                                  <Col className="text-right col-2">
+                                    <UncontrolledDropdown>
+                                      <DropdownToggle
+                                        className="btn-icon-only text-light"
+                                        href="#menu"
+                                        role="button"
+                                        size="sm"
+                                        color=""
+                                        onClick={e => e.preventDefault()}
+                                      >
+                                        <i className="fas fa-ellipsis-v" />
+                                      </DropdownToggle>
+                                      <DropdownMenu className="dropdown-menu-arrow" right>
+                                        <DropdownItem
+                                          onClick={() => this.changeGroup(item)}
+                                        >
+                                          Изменить группу
+                                        </DropdownItem>
+                                        <DropdownItem
+                                          onClick={() => this.deleteGroup(item)}
+                                        >
+                                          Удалить группу
+                                        </DropdownItem>
+                                      </DropdownMenu>
+                                    </UncontrolledDropdown>
+                                  </Col>
+                                </Row>
+                                <Row>
+                                  <Col className="col-6">
+                                    {item.view ? <Badge color="success" pill>Публичная</Badge> : <Badge color="light" pill>Приватная</Badge>}
+                                  </Col>
+                                  <Col className="col-6">
+                                    <Badge color="primary" pill>Менеджеров {item.managers.length}</Badge>
+                                  </Col>
+                                </Row>
                               </CardHeader>
                             </Card>
                           </div>
