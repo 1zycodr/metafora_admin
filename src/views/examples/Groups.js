@@ -29,8 +29,10 @@ import {
 import Header from "components/Headers/Header.js";
 import DragTableGroup from "components/DragGroups/DragTableGroup.js";
 import Loading from "components/Loading.js";
-import { timer, from } from "rxjs";
-import { groupBy, map, mergeMap, reduce } from 'rxjs/operators';
+import { ajax } from 'rxjs/ajax';
+import { timer, from, of } from "rxjs";
+import { groupBy, map, mergeMap, reduce, tap, switchMap } from 'rxjs/operators';
+import { request, getToken } from 'config';
 
 const allgroups = [
   { id:1,	parentID:0,	name: "almaty",	title: "Алматы", view: 1,	date: "2020-08-19 05:12:30",	status: 1, managers: [1, 4, 5] },
@@ -54,8 +56,22 @@ class Groups extends React.Component {
   }
   getGroups() {
     const result = { first: [], last: [] };
-    from(allgroups).pipe(
-      map(group => ({...group, parent: []})),
+    ajax({
+      url: request(`group`),
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'authorization': getToken(),
+        // 'credentials': true,
+      },
+      // body: {
+      //   rxjs: 'Hello World!'
+      // }
+    }).pipe(
+      switchMap(res => res.response.data),
+      map(group => {
+        return {...group, parent: []}
+      }),
       groupBy(group => group.parentID === 0),
       mergeMap(group$ =>
         group$.pipe(reduce((acc, cur) => [...acc, cur], [`${group$.key}`]))

@@ -1,5 +1,8 @@
 import React from "react";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
+import { ajax } from 'rxjs/ajax';
+import { switchMap } from 'rxjs/operators';
+import { request, getToken } from 'config';
 
 // reactstrap components
 import {
@@ -46,6 +49,21 @@ class EditGroup extends React.Component {
     this.createGroup = this.createGroup.bind(this);
     this.filterManagers = this.filterManagers.bind(this);
     this.filterSelector = this.filterSelector.bind(this);
+  }
+  componentWillMount() {
+    ajax({
+      url: request(`manager`),
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'authorization': getToken(),
+      }
+    }).pipe(
+      switchMap(res => res.response.data),
+    ).subscribe(
+      manager => this.setState({selected: {...this.state.selected, manager }}), 
+      err => {console.log(err); this.setState({ selected: managers })}
+    )
   }
   componentWillReceiveProps(newProps){
     const newManagers = [];

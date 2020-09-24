@@ -1,5 +1,8 @@
 import React from 'react';
 
+import { ajax } from 'rxjs/ajax';
+import { switchMap } from 'rxjs/operators';
+import { request, getToken } from 'config';
 // reactstrap components
 import { Card,
   Container,
@@ -37,7 +40,7 @@ class Managers extends React.Component {
   constructor(props) {
     super(props)
     this.state = {
-        managers : managers,
+        managers : [],
         modal: {
           open: false,
           title: 'Удаление менеджера',
@@ -60,6 +63,26 @@ class Managers extends React.Component {
     this.changeStatus = this.changeStatus.bind(this);
     this.toggle = this.toggle.bind(this);
   }
+
+  componentDidMount() {
+    this.queryManagers();
+  }
+  queryManagers() {
+    ajax({
+      url: request(`manager`),
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'authorization': getToken(),
+      }
+    }).pipe(
+      switchMap(res => res.response.data),
+    ).subscribe(
+      manager => this.setState({managers: [...this.state.managers, manager ]}), 
+      err => {console.log(err); this.setState({ managers: managers })}
+    )
+  }
+
   changeLogin(e) { this.setState({ username: e.target.value })}
   changeName(e) { this.setState({ firstname: e.target.value })}
   changeLastName(e) { this.setState({ lastname: e.target.value })}

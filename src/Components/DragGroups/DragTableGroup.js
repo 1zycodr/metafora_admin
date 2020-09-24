@@ -224,6 +224,7 @@ class DragTableGroup extends React.Component {
   changeGroup(group) {
     this.setState({ selectGroup: group, modal: true });
   }
+  // сохранение или создание группы
   saveGroup(group) {
     if(group.id) {
       this.setState({ modal: false });
