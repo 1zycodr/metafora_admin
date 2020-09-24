@@ -17,23 +17,14 @@ import {
   InputGroupAddon,
   InputGroupText,
 } from "reactstrap";
-const managers = [
-  {id:1, userID:2,	chatID:435274667, firstname:'Виталий', lastname:'Никонов', username:'N_Vitas', reghash:'1röÖr7', date:'2020-08-19 06:08:30',	status:2},
-  {id:2, userID:3,	chatID:553603486, firstname:'Eugene', lastname:'Antonov', username:'', reghash:'6Å9qev', date:'2020-09-10 10:26:50',	status:2},
-  {id:4, userID:4,	chatID:1233452136, firstname:'Olga', lastname:'Antonova', username:'', reghash:'SMESxÖ', date:'2020-09-10 10:31:19',	status:2},
-  {id:5, userID:0,	chatID:1219646264, firstname:'Metafora_1', lastname:'', username:'', reghash:'ELH2cl', date:'2020-09-10 10:35:46',	status:1},
-  {id:6, userID:0,	chatID:1255719428, firstname:'Анастасия',	lastname:'Тесленко', username:'', reghash:'7LpGS0', date:'2020-09-10 10:44:43',	status:1},
-  {id:7, userID:0,	chatID:532031398, firstname:'Metafora_2', lastname:'', username:'', reghash:'B7145C', date:'2020-09-10 10:45:13',	status:1},
-  {id:8, userID:0,	chatID:374090104, firstname:'Nursulu', lastname:'K', username:'', reghash:'6YWUÅv', date:'2020-09-10 10:59:34',	status:1},
-  {id:9, userID:0,	chatID:800646519, firstname:'Полина', lastname:'', username:'', reghash:'pOBdÖa', date:'2020-09-10 11:03:16',	status:1}
-];
 
 class EditGroup extends React.Component {
   constructor(props) {
     super(props)
     this.state = {
         group: props.group,
-        selected: Array.from(managers),
+        selected: [],
+        list: [],
         id2List: {
           boxone: 'managers',
           boxtwo: 'selected'
@@ -61,13 +52,15 @@ class EditGroup extends React.Component {
     }).pipe(
       switchMap(res => res.response.data),
     ).subscribe(
-      manager => this.setState({selected: {...this.state.selected, manager }}), 
-      err => {console.log(err); this.setState({ selected: managers })}
+      manager => {
+        const list = [...this.state.list, manager]
+        this.setState({selected: list, list})
+      }
     )
   }
   componentWillReceiveProps(newProps){
     const newManagers = [];
-    const newSelected = managers.filter(user => {
+    const newSelected = this.state.list.filter(user => {
       if(newProps.group.managers.indexOf(user.id) !== -1) {
         newManagers.push(user)
         return false
@@ -178,8 +171,33 @@ class EditGroup extends React.Component {
   createGroup() {
     const { group } = this.state;
     const { saveGroup, toggle } = this.props;
+    const parent = group.parent;
     if(typeof saveGroup === 'function') {
-      saveGroup(group);
+      let url = request(`group/create`);
+      if(group.id){
+        url = request(`group/update`);
+      }
+      // Сохранение в беке
+      ajax({
+        url,
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'authorization': getToken(),
+        },
+        body: {...group, view: group.view ? 1 : 0 }
+      })
+      .subscribe(
+        res => {
+          if(res.response.success) {
+            saveGroup({...res.response.data, parent})
+          } else {
+            console.log('Ошибка запроса', res)
+            saveGroup(group)
+          }
+        },
+        error => console.log(error)
+      )
     } else {
       toggle();
     }

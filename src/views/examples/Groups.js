@@ -30,18 +30,9 @@ import Header from "components/Headers/Header.js";
 import DragTableGroup from "components/DragGroups/DragTableGroup.js";
 import Loading from "components/Loading.js";
 import { ajax } from 'rxjs/ajax';
-import { timer, from, of } from "rxjs";
-import { groupBy, map, mergeMap, reduce, tap, switchMap } from 'rxjs/operators';
+import { groupBy, map, mergeMap, reduce, switchMap } from 'rxjs/operators';
 import { request, getToken } from 'config';
 
-const allgroups = [
-  { id:1,	parentID:0,	name: "almaty",	title: "Алматы", view: 1,	date: "2020-08-19 05:12:30",	status: 1, managers: [1, 4, 5] },
-  { id:2,	parentID:1,	name: "managers_one",	title: "Менеджеры 1",	view: 0,	date: "2020-08-19 05:12:30",	status: 1, managers: [] },
-  { id:3,	parentID:1,	name: "managers_two",	title: "Менеджеры 2",	view: 0,	date: "2020-08-19 05:12:30",	status: 1, managers: [] },
-  { id:5,	parentID:4,	name: "managers_tree",	title: "Менеджеры 3",	view: 0,	date: "2020-08-19 05:12:30",	status: 1, managers: [] },
-  { id:6,	parentID:4,	name: "managers_four",	title: "Менеджеры 4",	view: 0,	date: "2020-08-19 05:12:30",	status: 1, managers: [] },
-  { id:4,	parentID:0,	name: "kustanay",	title: "Кустанай", view: 1,	date: "2020-08-19 05:12:30",	status: 1, managers: [] },
-];
 class Groups extends React.Component {
   constructor(props) {
     super(props)
@@ -52,7 +43,7 @@ class Groups extends React.Component {
     this.getGroups = this.getGroups.bind(this);
   }
   componentWillMount() {
-    timer(500).subscribe(this.getGroups)
+    this.getGroups()
   }
   getGroups() {
     const result = { first: [], last: [] };

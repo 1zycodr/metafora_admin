@@ -1,13 +1,7 @@
 export const APIURL = 'http://127.0.0.1:8082/';
 
-const routes = [
-    'group',
-    'manager',
-];
-
 export const request = (url) => {
-    const rout = routes.filter(element => element === url);
-    return `${APIURL}${rout[0]}`;
+    return `${APIURL}${url}`;
 }
 
 export const getToken = () => { 

@@ -1,5 +1,8 @@
 import React from "react";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
+import { ajax } from 'rxjs/ajax';
+import { switchMap } from 'rxjs/operators';
+import { request, getToken } from 'config';
 
 // reactstrap components
 import {
@@ -170,6 +173,27 @@ class DragTableGroup extends React.Component {
       destClone.splice(destination.index, 0, removed);
       const groups = sourceClone.map(group => {
         if(group.id === moveId) {
+          // Блин бошка уже не варит
+          // const parent = group.parent;
+          // ajax({
+          //   url: request(`group/update`),
+          //   method: 'POST',
+          //   headers: {
+          //     'Content-Type': 'application/json',
+          //     'authorization': getToken(),
+          //   },
+          //   body: {...group, view: group.view ? 1 : 0 }
+          // })
+          // .subscribe(
+          //   res => {
+          //     if(res.response.success) {
+          //       this.setState({ selectGroup: {...res.response.data, parent}, modal: true });
+          //     } else {
+          //       console.log('Ошибка запроса', res)
+          //     }
+          //   },
+          //   error => console.log(error)
+          // )
           const parent = destClone.map(item => ({...item, parentID: moveId}))
           group.parent = parent;
         }
@@ -252,19 +276,37 @@ class DragTableGroup extends React.Component {
       this.setState({alert:{ open: true, color: 'danger', title: 'Нельзя удалить группу с подгруппами'}})
       return
     }
-    const groups = this.state.groups.filter(item => {
-        if(item.id === group.id) {
-          return false;
+    ajax({
+      url: request(`group/delete`),
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'authorization': getToken(),
+      },
+      body: {...group, view: group.view ? 1 : 0 }
+    })
+    .subscribe(
+      res => {
+        if(res.response.success) {
+          const groups = this.state.groups.filter(item => {
+            if(item.id === group.id) {
+              return false;
+            }
+            item.parent = item.parent.filter(child => {
+              if(child.id === group.id) {
+                return false;
+              }
+              return true;
+            })
+            return true;
+          })
+          this.setState({ modal: false, groups })
+        } else {
+          this.setState({alert:{ open: true, color: 'danger', title: 'Не удалось удалить группу'}});
         }
-        item.parent = item.parent.filter(child => {
-          if(child.id === group.id) {
-            return false;
-          }
-          return true;
-        })
-        return true;
-      })
-    this.setState({ modal: false, groups })
+      },
+      () => this.setState({alert:{ open: true, color: 'danger', title: 'Не удалось удалить группу'}})
+    )
   }
   closeAlert(){
     this.setState({alert:{ open: false, color: 'danger', title: ''}})
