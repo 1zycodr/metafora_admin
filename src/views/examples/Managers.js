@@ -90,8 +90,23 @@ class Managers extends React.Component {
   deleteManager(index) { 
     const managers = this.state.managers;
     const deleteManager = () => {
-      delete managers[index];
-      this.setState({ managers, modal: {...this.state.modal, open: !this.state.modal.open} })
+      ajax({
+        url: request(`manager/delete`),
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'authorization': getToken(),
+        },
+        body: managers[index]
+      })
+      .subscribe(
+        res => {
+          if(res.response.success) {
+            delete managers[index];
+            this.setState({ managers, modal: {...this.state.modal, open: !this.state.modal.open} })
+          }
+        }
+      );
     }
     this.setState({ modal: {...this.state.modal, 
       open: !this.state.modal.open,
@@ -104,12 +119,31 @@ class Managers extends React.Component {
     const manager = this.state.managers[index];
     const editManager = () => {
       const { firstname, lastname, username, status } = this.state;
+      // ajax({
+      //   url: request(`group/delete`),
+      //   method: 'POST',
+      //   headers: {
+      //     'Content-Type': 'application/json',
+      //     'authorization': getToken(),
+      //   },
+      //   body: {...group, view: group.view ? 1 : 0 }
+      // })
       const managers = this.state.managers.map((m, k) => {
         if(k === index) {
           m.firstname = firstname;
           m.lastname = lastname;
           m.username = username;
-          m.status = status;
+          m.status = parseInt(status, 10);
+          ajax({
+            url: request(`manager/update`),
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'authorization': getToken(),
+            },
+            body: m
+          })
+          .subscribe()
         }
         return m;
       })

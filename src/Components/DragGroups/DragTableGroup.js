@@ -92,10 +92,22 @@ class DragTableGroup extends React.Component {
 
     const groups = this.state.groups.map(group => {
       if(group.id === sourceId) {
-        group.parent = sourceClone.map(item => ({...item, parentID: sourceId}))
+        group.parent = sourceClone.map(item => {
+          if(item.parentID !== sourceId) {
+            item.parentID = sourceId;
+            this.moveServer(item);
+          }
+          return item;
+        })
       }
       if(group.id === destinationId) {
-        group.parent = destClone.map(item => ({...item, parentID: destinationId}))
+        group.parent = destClone.map(item => {
+          if(item.parentID !== destinationId) {
+            item.parentID = destinationId;
+            this.moveServer(item);
+          }
+          return item;
+        })
       }
       return group;
     });
@@ -112,6 +124,7 @@ class DragTableGroup extends React.Component {
     });
     if(newgroup){
       newgroup.parentID = 0;
+      this.moveServer(newgroup);
       groups.push(newgroup)
     }
     this.setState({ groups });
@@ -155,6 +168,7 @@ class DragTableGroup extends React.Component {
       });
       if(newgroup){
         newgroup.parentID = 0;
+        this.moveServer(newgroup);
         groups.push(newgroup)
       }
       this.setState({ groups });
@@ -173,28 +187,14 @@ class DragTableGroup extends React.Component {
       destClone.splice(destination.index, 0, removed);
       const groups = sourceClone.map(group => {
         if(group.id === moveId) {
-          // Блин бошка уже не варит
-          // const parent = group.parent;
-          // ajax({
-          //   url: request(`group/update`),
-          //   method: 'POST',
-          //   headers: {
-          //     'Content-Type': 'application/json',
-          //     'authorization': getToken(),
-          //   },
-          //   body: {...group, view: group.view ? 1 : 0 }
-          // })
-          // .subscribe(
-          //   res => {
-          //     if(res.response.success) {
-          //       this.setState({ selectGroup: {...res.response.data, parent}, modal: true });
-          //     } else {
-          //       console.log('Ошибка запроса', res)
-          //     }
-          //   },
-          //   error => console.log(error)
-          // )
-          const parent = destClone.map(item => ({...item, parentID: moveId}))
+          this.moveServer(group);
+          const parent = destClone.map(item => {
+            if(item.parentID !== moveId) {
+              item.parentID = moveId;
+              this.moveServer(item);
+            }
+            return item;
+          })
           group.parent = parent;
         }
         return group;
@@ -202,6 +202,26 @@ class DragTableGroup extends React.Component {
       this.setState({ groups });
       return;
     }
+  }
+  moveServer(group) {
+    console.log('moveServer', group);
+    ajax({
+      url: request(`group/update`),
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'authorization': getToken(),
+      },
+      body: {...group, view: group.view ? 1 : 0 }
+    })
+    .subscribe(
+      res => {
+        if(!res.response.success) {
+          this.setState({alert:{ open: true, color: 'danger', title: 'Ошибка переноса группы'}})
+        }
+      },
+      error => console.log(error)
+    )
   }
   onDragEnd(result) {
     const { source, destination } = result;
@@ -251,23 +271,22 @@ class DragTableGroup extends React.Component {
   // сохранение или создание группы
   saveGroup(group) {
     if(group.id) {
-      this.setState({ modal: false });
-    } else {
       const { groups } = this.state;
+      let maxID = 0;
       groups.forEach(item => {
-        if(item.id > group.id) {
-          group.id = item.id
+        if(item.id > maxID) {
+          maxID = item.id
         }
         item.parent.forEach(child => {
-          if(child.id > group.id) {
-            group.id = child.id
+          if(child.id > maxID) {
+            maxID = child.id
           } 
         })
       })
-      group.id = group.id + 1;
-      groups.push(group);
-      console.log(groups, group);
-      this.setState({ modal: false, groups, selectGroup: defaultGroup });
+      if(group.id > maxID){
+        groups.push(group);
+      }
+      this.setState({ modal: false, groups });
     }
   }
   deleteGroup(group) {

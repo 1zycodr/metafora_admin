@@ -70,8 +70,10 @@ class EditGroup extends React.Component {
     this.setState({ group: newProps.group, selected: newSelected, managers: newManagers })
   }
   getItemStyle(isDragging, draggableStyle) {
-    if(draggableStyle.left > 0) {
-      draggableStyle.left -= 300
+    const body = document.body;
+    const ofs = (body.clientWidth - 800) / 2;
+    if(isDragging) {
+      draggableStyle.left = draggableStyle.left - ofs;
     }
     return {
       // some basic styles to make the items look a bit nicer
@@ -217,122 +219,124 @@ class EditGroup extends React.Component {
       <Modal size="lg" isOpen={modal} toggle={toggle}>
         <ModalHeader toggle={toggle}>Новая группа</ModalHeader>
         <ModalBody>
-          <FormGroup>
-            <label
-              className="form-control-label"
-            >
-              Название новой группы
-            </label>
-            <Input
-              className="form-control-alternative"
-              value={title}
-              onChange={this.changeTitle}
-              placeholder="Введите название новой группы"
-              type="text"
-            />
-          </FormGroup>
-          <FormGroup check>
-            <label
-              className="form-control-label"
-            >
+          <div ref={e => this.wrapRef = e}>
+            <FormGroup>
+              <label
+                className="form-control-label"
+              >
+                Название новой группы
+              </label>
               <Input
                 className="form-control-alternative"
-                name="view"
-                checked={view}
-                onChange={this.changeView}
-                type="checkbox"
+                value={title}
+                onChange={this.changeTitle}
+                placeholder="Введите название новой группы"
+                type="text"
               />
-              Показывать в вопросе бота из какого вы города
-            </label>
-          </FormGroup>
-          <hr/>
-          <FormGroup check>
-            <label
-              className="form-control-label"
-            >Перетащите менеджера в необходимый блок</label>
-          </FormGroup>
-          <DragDropContext onDragEnd={this.onDragEnd}>
-            <Droppable droppableId="boxone">
-              {(provided, snapshot) => (
-                <div
-                  ref={provided.innerRef}
-                  style={this.getListStyle(snapshot.isDraggingOver)}>
-                  <h3>Менеджеры в группе</h3>
-                  <FormGroup>
-                    <InputGroup className="input-group-alternative">
-                      <InputGroupAddon addonType="prepend">
-                        <InputGroupText>
-                          <i className="fas fa-search" />
-                        </InputGroupText>
-                      </InputGroupAddon>
-                      <Input placeholder="Поиск менеджера" value={searchManager} onChange={this.filterManagers} type="text" />
-                    </InputGroup>
-                  </FormGroup>
-                  {this.state.managers.filter(manager => manager.firstname.toLowerCase()
-                  .indexOf(searchManager.toLowerCase()) !== -1).map((item, index) => (
-                    <Draggable
-                      key={item.id}
-                      draggableId={`draggableId-${item.id}`}
-                      index={index}>
-                      {(provided, snapshot) => (
-                        <div
-                          ref={provided.innerRef}
-                          {...provided.draggableProps}
-                          {...provided.dragHandleProps}
-                          style={this.getItemStyle(
-                            snapshot.isDragging,
-                            provided.draggableProps.style
-                          )}>
-                          {item.firstname}
-                        </div>
-                      )}
-                    </Draggable>
-                  ))}
-                  {provided.placeholder}
-                </div>
-              )}
-            </Droppable>
-            <Droppable droppableId="boxtwo">
-              {(provided, snapshot) => (
-                <div
-                  ref={provided.innerRef}
-                  style={this.getListStyle(snapshot.isDraggingOver)}>
-                  <h3>Менеджеры вне группы</h3>
-                  <FormGroup>
-                    <InputGroup className="input-group-alternative">
-                      <InputGroupAddon addonType="prepend">
-                        <InputGroupText>
-                          <i className="fas fa-search" />
-                        </InputGroupText>
-                      </InputGroupAddon>
-                      <Input placeholder="Поиск менеджера" value={searchSelected} onChange={this.filterSelector} type="text" />
-                    </InputGroup>
-                  </FormGroup>
-                  {this.state.selected.filter(manager => manager.firstname.toLowerCase()
-                  .indexOf(searchSelected.toLowerCase()) !== -1).map((item, index) => (
-                    <Draggable
-                      key={item.id}
-                      draggableId={`draggableId-${item.id}`}
-                      index={index}>
-                      {(provided, snapshot) => (
-                        <div
-                          ref={provided.innerRef}
-                          {...provided.draggableProps}
-                          {...provided.dragHandleProps}
-                          style={this.getItemStyle(
-                            snapshot.isDragging,
-                            provided.draggableProps.style
-                          )}>
-                          {item.firstname}
-                        </div>
-                      )}
-                    </Draggable>
-                  ))}
-                  {provided.placeholder}
-                </div>
-              )}
-            </Droppable>
-          </DragDropContext>
+            </FormGroup>
+            <FormGroup check>
+              <label
+                className="form-control-label"
+              >
+                <Input
+                  className="form-control-alternative"
+                  name="view"
+                  checked={view}
+                  onChange={this.changeView}
+                  type="checkbox"
+                />
+                Показывать в вопросе бота из какого вы города
+              </label>
+            </FormGroup>
+            <hr/>
+            <FormGroup check>
+              <label
+                className="form-control-label"
+              >Перетащите менеджера в необходимый блок</label>
+            </FormGroup>
+            <DragDropContext onDragEnd={this.onDragEnd}>
+              <Droppable droppableId="boxone">
+                {(provided, snapshot) => (
+                  <div
+                    ref={provided.innerRef}
+                    style={this.getListStyle(snapshot.isDraggingOver)}>
+                    <h3>Менеджеры в группе</h3>
+                    <FormGroup>
+                      <InputGroup className="input-group-alternative">
+                        <InputGroupAddon addonType="prepend">
+                          <InputGroupText>
+                            <i className="fas fa-search" />
+                          </InputGroupText>
+                        </InputGroupAddon>
+                        <Input placeholder="Поиск менеджера" value={searchManager} onChange={this.filterManagers} type="text" />
+                      </InputGroup>
+                    </FormGroup>
+                    {this.state.managers.filter(manager => manager.firstname.toLowerCase()
+                    .indexOf(searchManager.toLowerCase()) !== -1).map((item, index) => (
+                      <Draggable
+                        key={item.id}
+                        draggableId={`draggableId-${item.id}`}
+                        index={index}>
+                        {(provided, snapshot) => (
+                          <div
+                            ref={provided.innerRef}
+                            {...provided.draggableProps}
+                            {...provided.dragHandleProps}
+                            style={this.getItemStyle(
+                              snapshot.isDragging,
+                              provided.draggableProps.style
+                            )}>
+                            {item.firstname}
+                          </div>
+                        )}
+                      </Draggable>
+                    ))}
+                    {provided.placeholder}
+                  </div>
+                )}
+              </Droppable>
+              <Droppable droppableId="boxtwo">
+                {(provided, snapshot) => (
+                  <div
+                    ref={provided.innerRef}
+                    style={this.getListStyle(snapshot.isDraggingOver)}>
+                    <h3>Менеджеры вне группы</h3>
+                    <FormGroup>
+                      <InputGroup className="input-group-alternative">
+                        <InputGroupAddon addonType="prepend">
+                          <InputGroupText>
+                            <i className="fas fa-search" />
+                          </InputGroupText>
+                        </InputGroupAddon>
+                        <Input placeholder="Поиск менеджера" value={searchSelected} onChange={this.filterSelector} type="text" />
+                      </InputGroup>
+                    </FormGroup>
+                    {this.state.selected.filter(manager => manager.firstname.toLowerCase()
+                    .indexOf(searchSelected.toLowerCase()) !== -1).map((item, index) => (
+                      <Draggable
+                        key={item.id}
+                        draggableId={`draggableId-${item.id}`}
+                        index={index}>
+                        {(provided, snapshot) => (
+                          <div
+                            ref={provided.innerRef}
+                            {...provided.draggableProps}
+                            {...provided.dragHandleProps}
+                            style={this.getItemStyle(
+                              snapshot.isDragging,
+                              provided.draggableProps.style
+                            )}>
+                            {item.firstname}
+                          </div>
+                        )}
+                      </Draggable>
+                    ))}
+                    {provided.placeholder}
+                  </div>
+                )}
+              </Droppable>
+            </DragDropContext>
+          </div>
         </ModalBody>
         <ModalFooter>
           <Button color="primary" onClick={this.createGroup}>Сохранить</Button>{' '}
