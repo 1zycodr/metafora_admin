@@ -10,7 +10,7 @@ export default function Message (props) {
             </td>
             <td>{ props.group }</td>
             <td>{ props.token }</td>
-            <td>{ props.status }</td>
+            <td>{ props.status ? "Активен" : "Неактивен" }</td>
         </tr>
     )
 } 
