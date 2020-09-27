@@ -22,7 +22,7 @@ export default function Chat(props) {
                         ) }
                     </div>
                     <div className="modal-footer">
-                        <button type="button" className="btn btn-secondary" data-dismiss="modal" onClick={ props.back }>Close</button>
+                        <button type="button" className="btn btn-secondary" data-dismiss="modal" onClick={ props.back }>Закрыть</button>
                     </div>
                 </div>
             </div>
