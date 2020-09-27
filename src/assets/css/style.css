@@ -102,3 +102,26 @@
     margin-top: 10px;
     margin-left: 20px;
 }
+
+.modal-body {
+    overflow-y: auto;
+    max-height: 500px;
+}
+
+::-webkit-scrollbar {
+    width: 5px;
+}
+
+::-webkit-scrollbar-track {
+    box-shadow: inset 0 0 5px grey; 
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+    background:black; 
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background:rgb(54, 56, 58); 
+}
