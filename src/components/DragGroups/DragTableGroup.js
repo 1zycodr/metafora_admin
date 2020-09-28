@@ -1,7 +1,6 @@
 import React from "react";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import { ajax } from 'rxjs/ajax';
-import { switchMap } from 'rxjs/operators';
 import { request, getToken } from 'config';
 
 // reactstrap components

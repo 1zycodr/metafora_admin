@@ -119,15 +119,6 @@ class Managers extends React.Component {
     const manager = this.state.managers[index];
     const editManager = () => {
       const { firstname, lastname, username, status } = this.state;
-      // ajax({
-      //   url: request(`group/delete`),
-      //   method: 'POST',
-      //   headers: {
-      //     'Content-Type': 'application/json',
-      //     'authorization': getToken(),
-      //   },
-      //   body: {...group, view: group.view ? 1 : 0 }
-      // })
       const managers = this.state.managers.map((m, k) => {
         if(k === index) {
           m.firstname = firstname;
@@ -313,11 +304,6 @@ function Manager(props) {
                   onClick={() => props.editManager(props.index)}
                 >
                   Изменить
-                </DropdownItem>
-                <DropdownItem
-                  onClick={e => e.preventDefault()}
-                >
-                  Something else here
                 </DropdownItem>
               </DropdownMenu>
             </UncontrolledDropdown>
