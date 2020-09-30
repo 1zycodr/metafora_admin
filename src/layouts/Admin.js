@@ -23,11 +23,16 @@ import { Container } from "reactstrap";
 import AdminNavbar from "components/Navbars/AdminNavbar.js";
 import AdminFooter from "components/Footers/AdminFooter.js";
 import Sidebar from "components/Sidebar/Sidebar.js";
+import { getToken } from 'config';
 
 import routes from "routes.js";
 
 class Admin extends React.Component {
   componentDidUpdate(e) {
+    const { history } = this.props;
+    if(!getToken()) {
+      history.push("/auth");
+    }
     document.documentElement.scrollTop = 0;
     document.scrollingElement.scrollTop = 0;
     this.refs.mainContent.scrollTop = 0;
@@ -60,6 +65,10 @@ class Admin extends React.Component {
     return "Brand";
   };
   render() {
+    const { history } = this.props;
+    if(!getToken()) {
+      history.push("/auth");
+    }
     return (
       <>
         <Sidebar

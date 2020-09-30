@@ -30,6 +30,8 @@ import {
   InputGroup,
   Col
 } from "reactstrap";
+import { ajax } from 'rxjs/ajax';
+import { request, getToken, saveToken } from 'config';
 
 class Login extends React.Component {
   constructor(props) {
@@ -57,7 +59,29 @@ class Login extends React.Component {
   goHome(e) {
     e.preventDefault();
     const { history } = this.props;
-    const { username, password } = this.state; 
+    const { username, password } = this.state;
+    ajax({
+      url: request(`login/token`),
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'authorization': getToken(),
+      },
+      body: { login: username, password }
+    })
+    .subscribe(
+      res => {
+        if(res.response.success) {
+          if(res.response.data.token){
+            saveToken(res.response.data.token)
+            history.push("/")
+          }
+        } else {
+          this.setState({ error: true });
+        }
+      },
+      () => this.setState({ error: true })
+    ) 
     if(username === 'admin' && password === 'admin'){
       history.push("/");
     } else {

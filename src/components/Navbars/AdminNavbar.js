@@ -34,6 +34,7 @@ import {
   Container,
   Media
 } from "reactstrap";
+import { saveToken } from 'config';
 
 class AdminNavbar extends React.Component {
   render() {
@@ -97,7 +98,7 @@ class AdminNavbar extends React.Component {
                     <span>Support</span>
                   </DropdownItem>
                   <DropdownItem divider />
-                  <DropdownItem href="#pablo" onClick={e => e.preventDefault()}>
+                  <DropdownItem href="#pablo" onClick={e => {e.preventDefault(); saveToken(''); this.props.history.push('/auth')}}>
                     <i className="ni ni-user-run" />
                     <span>Logout</span>
                   </DropdownItem>
