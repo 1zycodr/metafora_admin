@@ -23,6 +23,7 @@ import Login from "views/examples/Login.js";
 import Tables from "views/examples/Tables.js";
 import Icons from "views/examples/Icons.js";
 import Managers from "views/examples/Managers.js"
+import Settings from "views/examples/Settings.js"
 import Groups from "views/examples/Groups.js"
 import MessagesPage from "components/MessagesPage/MessagesPage"
 
@@ -95,6 +96,13 @@ var routes = [
     name: "Сообщения",
     icon: "ni ni-email-83",
     component: MessagesPage,
+    layout: "/admin"
+  },
+  {
+    path: "/settings",
+    name: "Настройки",
+    icon: "ni ni-settings",
+    component: Settings,
     layout: "/admin"
   }
   
