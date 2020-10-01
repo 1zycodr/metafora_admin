@@ -6,10 +6,10 @@ import {
     DropdownItem,
 } from "reactstrap";
 
-const statuses = ['Закрыта', 'Открыта', 'Занята'];
+const statuses = ['Закрыта', 'Открыта', 'Занята', 'Покинута'];
 
 function Message(props) {
-  const { room, showMessage, deleteRoom, index } = props;
+  const { room, showMessage, changeRoomStatus, index } = props;
   return (
     <tr key={index}>
       <td>{ room.id }</td>
@@ -36,9 +36,9 @@ function Message(props) {
               Просмотр сообщений
             </DropdownItem>
             <DropdownItem
-              onClick={() => deleteRoom(room)}
+              onClick={() => changeRoomStatus(room)}
             >
-              Удалить
+              {room.status === 0 ? 'Открыть' : 'Закрыть'}
             </DropdownItem>
           </DropdownMenu>
         </UncontrolledDropdown>

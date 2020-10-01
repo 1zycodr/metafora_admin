@@ -2,11 +2,8 @@ import React from 'react'
 import {
   Card,
   CardBody,
-  CardFooter,
   Row,
   Col,
-  CardTitle,
-  CardSubtitle,
   Badge,
 } from 'reactstrap';
 import moment from 'moment';

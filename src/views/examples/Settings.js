@@ -8,21 +8,11 @@ import { Card,
   Container,
   Row,
   CardHeader,
-  Table,
-  Button,
-  UncontrolledDropdown,
-  DropdownToggle,
-  DropdownMenu,
-  DropdownItem,
-  Modal,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
   Form,
   FormGroup,
   Input, CardBody
 } from "reactstrap";
-import moment from 'moment';
+// import moment from 'moment';
 // core components
 import Header from "components/Headers/Header.js";
 

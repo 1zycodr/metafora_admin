@@ -16,7 +16,7 @@ import Message from 'components/MessagesPage/Message';
 import Chat from './Chat';
 
 import { ajax } from 'rxjs/ajax';
-import { switchMap } from 'rxjs/operators';
+import { switchMap, map } from 'rxjs/operators';
 import { request, getToken } from 'config';
 
 const rooms = [];
@@ -39,6 +39,7 @@ class MessagesPage extends React.Component {
     }
 
     this.deleteRoom = this.deleteRoom.bind(this)
+    this.changeRoomStatus = this.changeRoomStatus.bind(this)
     this.showModal = this.showModal.bind(this)
     this.toggle = this.toggle.bind(this)
   }
@@ -66,6 +67,44 @@ class MessagesPage extends React.Component {
       let { rooms } = this.state
       rooms.splice(parseInt(e.target.dataset.index, 10), 1)
       this.setState({ rooms })
+  }
+  success(res, room) {
+    if(res.response.success){
+      const rooms = this.state.rooms.map(r => {
+        if(r.chatRoom === room.chatRoom){
+          return room;
+        } 
+        return r;
+      })
+      this.setState({ rooms, modal: {...this.state.modal, open: !this.state.modal.open} });
+    }
+  }
+  changeRoomStatus(room) {
+    const yes = () => {
+      room.status = room.status ? 0 : 1;
+      ajax({
+        url: request(`room/update`),
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'authorization': getToken(),
+        },
+        body: room
+      }).pipe(
+        map(res => this.success(res, room))
+      ).subscribe()
+    }
+    this.setState({
+      modal: {
+        open: true,
+        title: 'Список сообщений',
+        body: <div>Вы действительно хотите <b className="text-warning">{room.status ? 'закрыть' : 'открыть'}</b> чат?</div>,
+        ok: yes.bind(this),
+        okTitle: 'Да',
+        cancel: this.toggle.bind(this),
+        cancelTitle: 'Нет',
+      }
+    })
   }
   toggle() {
     this.setState({ modal: {...this.state.modal, open: !this.state.modal.open} })
@@ -118,7 +157,8 @@ class MessagesPage extends React.Component {
               <tbody>
                 { this.state.rooms.map(
                   (room, index) => {
-                    return <Message key={ index } index={ index } room={room} showMessage={ this.showModal } deleteRoom={ this.deleteRoom } />
+                    return <Message key={ index } index={ index } room={room} 
+                      showMessage={ this.showModal } changeRoomStatus={ this.changeRoomStatus } deleteRoom={ this.deleteRoom } />
                   }
                 )}
               </tbody>

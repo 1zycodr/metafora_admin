@@ -20,8 +20,41 @@ import React from "react";
 // reactstrap components
 import { Card, CardBody, CardTitle, Container, Row, Col } from "reactstrap";
 
+import { ajax } from 'rxjs/ajax';
+import { map } from 'rxjs/operators';
+import { request, getToken } from 'config';
+
 class Header extends React.Component {
+  state = {
+    managers: 8,
+    guests: 1,
+    openChats: 2,
+    closeChats: 8,
+  }
+  componentDidMount() {
+    this.queryStatistic()
+  }
+  queryStatistic(){
+    ajax({
+      url: request(`statistic`),
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'authorization': getToken(),
+      }
+    }).pipe(
+      map(res => res.response),
+    ).subscribe(
+      statistic => {
+        if(statistic.success){
+          this.setState(statistic.data);
+        }
+      }, 
+      err => {console.log(err);}
+    )
+  }
   render() {
+    const { managers, guests, openChats, closeChats } = this.state;
     return (
       <>
         <div className="header bg-gradient-info pb-8 pt-5 pt-md-8">
@@ -38,24 +71,18 @@ class Header extends React.Component {
                             tag="h5"
                             className="text-uppercase text-muted mb-0"
                           >
-                            Traffic
+                            Активированных менеджеров
                           </CardTitle>
                           <span className="h2 font-weight-bold mb-0">
-                            350,897
+                            {managers}
                           </span>
                         </div>
                         <Col className="col-auto">
-                          <div className="icon icon-shape bg-danger text-white rounded-circle shadow">
-                            <i className="fas fa-chart-bar" />
+                          <div className="icon icon-shape bg-yellow text-white rounded-circle shadow">
+                            <i className="fas fa-users" />
                           </div>
                         </Col>
                       </Row>
-                      <p className="mt-3 mb-0 text-muted text-sm">
-                        <span className="text-success mr-2">
-                          <i className="fa fa-arrow-up" /> 3.48%
-                        </span>{" "}
-                        <span className="text-nowrap">Since last month</span>
-                      </p>
                     </CardBody>
                   </Card>
                 </Col>
@@ -68,10 +95,10 @@ class Header extends React.Component {
                             tag="h5"
                             className="text-uppercase text-muted mb-0"
                           >
-                            New users
+                            Новых менеджеров
                           </CardTitle>
                           <span className="h2 font-weight-bold mb-0">
-                            2,356
+                            {guests}
                           </span>
                         </div>
                         <Col className="col-auto">
@@ -80,12 +107,6 @@ class Header extends React.Component {
                           </div>
                         </Col>
                       </Row>
-                      <p className="mt-3 mb-0 text-muted text-sm">
-                        <span className="text-danger mr-2">
-                          <i className="fas fa-arrow-down" /> 3.48%
-                        </span>{" "}
-                        <span className="text-nowrap">Since last week</span>
-                      </p>
                     </CardBody>
                   </Card>
                 </Col>
@@ -98,22 +119,16 @@ class Header extends React.Component {
                             tag="h5"
                             className="text-uppercase text-muted mb-0"
                           >
-                            Sales
+                            Открытых чатов
                           </CardTitle>
-                          <span className="h2 font-weight-bold mb-0">924</span>
+                          <span className="h2 font-weight-bold mb-0">{openChats}</span>
                         </div>
                         <Col className="col-auto">
-                          <div className="icon icon-shape bg-yellow text-white rounded-circle shadow">
-                            <i className="fas fa-users" />
+                          <div className="icon icon-shape bg-danger text-white rounded-circle shadow">
+                            <i className="ni ni-email-83" />
                           </div>
                         </Col>
                       </Row>
-                      <p className="mt-3 mb-0 text-muted text-sm">
-                        <span className="text-warning mr-2">
-                          <i className="fas fa-arrow-down" /> 1.10%
-                        </span>{" "}
-                        <span className="text-nowrap">Since yesterday</span>
-                      </p>
                     </CardBody>
                   </Card>
                 </Col>
@@ -126,24 +141,18 @@ class Header extends React.Component {
                             tag="h5"
                             className="text-uppercase text-muted mb-0"
                           >
-                            Performance
+                            Закрытых чатов
                           </CardTitle>
                           <span className="h2 font-weight-bold mb-0">
-                            49,65%
+                            {closeChats}
                           </span>
                         </div>
                         <Col className="col-auto">
                           <div className="icon icon-shape bg-info text-white rounded-circle shadow">
-                            <i className="fas fa-percent" />
+                            <i className="ni ni-lock-circle-open" />
                           </div>
                         </Col>
                       </Row>
-                      <p className="mt-3 mb-0 text-muted text-sm">
-                        <span className="text-success mr-2">
-                          <i className="fas fa-arrow-up" /> 12%
-                        </span>{" "}
-                        <span className="text-nowrap">Since last month</span>
-                      </p>
                     </CardBody>
                   </Card>
                 </Col>
