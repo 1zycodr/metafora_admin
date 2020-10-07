@@ -107,7 +107,7 @@ class Settings extends React.Component {
       setURL(domainAPI);
     }
     const body = {...this.state.settings,
-      hostService: `0.0.0.0:${hostService}`,
+      hostService: `0.0.0.0:${hostService.replace(/([\d].[\d].[\d].[\d]:)/g,'')}`,
       durationClients: parseInt(durationClients, 10),
       durationManagers: parseInt(durationManagers, 10),
     }
