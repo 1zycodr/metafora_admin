@@ -1,18 +1,17 @@
 import React from 'react';
 
 import { ajax } from 'rxjs/ajax';
-import { switchMap } from 'rxjs/operators';
-import { request, getToken } from 'config';
-// reactstrap components
+import { map } from 'rxjs/operators';
+import { request, getToken, getURL, setURL } from 'config';
+
 import { Card,
   Container,
   Row,
   CardHeader,
-  Form,
+  Form, Button,
   FormGroup,
-  Input, CardBody
+  Input, CardBody, Alert
 } from "reactstrap";
-// import moment from 'moment';
 // core components
 import Header from "components/Headers/Header.js";
 
@@ -20,8 +19,30 @@ class Settings extends React.Component {
   constructor(props) {
     super(props)
     this.state = {
-        settings: {}
+      settings: {
+        comandID: 0,
+        crontime: "10_sec",
+        durationClients: 5,
+        durationManagers: 30,
+        durationStart: 10,
+        googleFolder: "1Jq0Kxw8KsnPNZNbf-QJZOed4BHo9uFeO",
+        hostService: "0.0.0.0:8083",
+        messageFailManager: "messageFailManager",
+        messageFormAuth: "messageFormAuth",
+        token: "000000000:XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+        updateID: 0,
+      },
+      alert: { open: false, color: 'danger', title: ''},
+      domainAPI: getURL(),
     }
+    this.handlerSave = this.handlerSave.bind(this);
+    this.closeAlert = this.closeAlert.bind(this);
+    this.changeToken = this.changeToken.bind(this);
+    this.changeGoogleFolder = this.changeGoogleFolder.bind(this);
+    this.changeHostService = this.changeHostService.bind(this);
+    this.changeDurationClients = this.changeDurationClients.bind(this);
+    this.changeDurationManagers = this.changeDurationManagers.bind(this);
+    this.changeDomainAPI = this.changeDomainAPI.bind(this);
   }
 
   componentWillMount() {
@@ -36,20 +57,139 @@ class Settings extends React.Component {
         'authorization': getToken(),
       }
     }).pipe(
-      switchMap(res => res.response.data),
+      map(res => res.response.data),
     ).subscribe(
-      manager => this.setState({managers: [...this.state.managers, manager ]}), 
-      err => {console.log(err); this.setState({ settings: { username: '', firstname: '', lastname: ''} })}
+      settings => this.setState({ settings: {...this.state.settings, ...settings }}), 
+      err => console.log(err)
     )
   }
-
-  changeLogin(){}
-  changeName(){}
-  changeLastName(){}
-  changeStatus(){}
-
+  handlerSave(e) {
+    e.preventDefault();
+    const button = e.target.querySelector('button');
+    const { domainAPI, settings: { durationClients, durationManagers, 
+      googleFolder, hostService, token } } = this.state;
+    if(button) button.disabled = true;
+    if(!/[0-9]{9}:[A-Za-z0-9]{35}/.test(token)){
+      this.setError('Поле токена телеграмм бота не соответствует формату 000000000:XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX')
+      if(button) button.disabled = false;
+      return;
+    }
+    if(googleFolder.length !== 33){
+      this.setError('Поле папки гугл не соответствует формату')
+      if(button) button.disabled = false;
+      return;
+    }
+    if(hostService.length < 2){
+      this.setError('Поле порта должно содержать как минимум 2 числа')
+      if(button) button.disabled = false;
+      return;
+    }
+    if(durationClients.length === 0){
+      this.setError('Поле время реплики должно содержать как минимум 1 число')
+      if(button) button.disabled = false;
+      return;
+    }
+    if(durationManagers.length === 0){
+      this.setError('Поле ответа менеджера должно содержать как минимум 1 число')
+      if(button) button.disabled = false;
+      return;
+    }
+    if(domainAPI.length === 0){
+      this.setError('Поле URL сервиса должно содержать как минимум 1 число')
+      if(button) button.disabled = false;
+      return;
+    }
+    if(!/^(http|https):\/\/[^ "]+$/.test(domainAPI)){
+      this.setError('Поле URL сервиса не соответствует URL адресу')
+      if(button) button.disabled = false;
+      return;
+    } else {
+      setURL(domainAPI);
+    }
+    const body = {...this.state.settings,
+      hostService: `0.0.0.0:${hostService}`,
+      durationClients: parseInt(durationClients, 10),
+      durationManagers: parseInt(durationManagers, 10),
+    }
+    ajax({
+      url: request(`settings`),
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'authorization': getToken(),
+      },
+      body,
+    }).pipe(
+      map(res => res.response.success),
+    ).subscribe(
+      done => done ? this.setSuccess() : this.setError('Произошла ошибка сохранения'), 
+      err => {this.setError('Произошла ошибка сохранения'); console.log(err)},
+      () => { button.disabled = false }
+    )
+  }
+  closeAlert(){
+    this.setState({alert:{ open: false }})
+  }
+  setError(err) {
+    this.setState({alert:{ open: true, color: 'danger', title: err }})
+    setTimeout(this.closeAlert, 5000)
+  }
+  setSuccess() {
+    this.setState({alert:{ open: true, color: 'success', title: 'Настройки успешно сохраненны' }})
+    setTimeout(this.closeAlert, 5000)
+  }
+  changeToken(e){
+    const token = e.target.value;
+    if(/[А-Яа-я]/.test(token)) {
+      this.setError('Поле токена телеграмм бота не должно содержать символы кирилицы!')
+      return;
+    }
+    this.setState({ settings: { ...this.state.settings, token: token.slice(0,45) }})
+  }
+  changeGoogleFolder(e){
+    const googleFolder = e.target.value;
+    if(/[А-Яа-я]/.test(googleFolder)) {
+      this.setError('Поле папки гугл не должно содержать символы кирилицы!')
+      return;
+    }
+    this.setState({ settings: { ...this.state.settings, googleFolder: googleFolder.slice(0,33) }})
+  }
+  changeHostService(e){
+    const hostService = e.target.value;
+    if(/[A-Za-zА-Яа-я]+/.test(hostService)) {
+      this.setError('Поле порта должно содержать только цифры!')
+      return;
+    }
+    this.setState({ settings: { ...this.state.settings, hostService: hostService.slice(0,4) }})
+  }
+  changeDurationClients(e){
+    const durationClients = e.target.value;
+    if(/[A-Za-zА-Яа-я]+/.test(durationClients)) {
+      this.setError('Поле время реплики должно содержать только цифры!')
+      return;
+    }
+    this.setState({ settings: { ...this.state.settings, durationClients: durationClients.slice(0,4) }})
+  }
+  changeDurationManagers(e){
+    const durationManagers = e.target.value;
+    if(/[A-Za-zА-Яа-я]+/.test(durationManagers)) {
+      this.setError('Поле ответа менеджера должно содержать только цифры!')
+      return;
+    }
+    this.setState({ settings: { ...this.state.settings, durationManagers: durationManagers.slice(0,4) }})
+  }
+  changeDomainAPI(e) {
+    const domainAPI = e.target.value;
+    if(/https?\/\/:[A-Za-zА-Яа-я]+/.test(domainAPI)) {
+      this.setError('Поле URL сервиса не соответствует домену!')
+      return;
+    }
+    this.setState({ domainAPI })
+  }
+  
   render() {
-    const { settings: { username, firstname, lastname} } = this.state;
+    const { domainAPI, settings: { durationClients, durationManagers, 
+      googleFolder, hostService, token }, alert:{ open, color, title} } = this.state;
     return (
       <>
         <Header />
@@ -60,41 +200,82 @@ class Settings extends React.Component {
               <Card className="shadow">
                 <CardHeader className="border-0">
                 <h2>Настройки</h2>
+                <Alert color={color} isOpen={open} toggle={this.closeAlert}>{title}</Alert>
                 </CardHeader>
                 <CardBody>
-                <Form>
+                <Form onSubmit={this.handlerSave}>
                   <FormGroup>
-                    <label className="form-control-label" htmlFor="input-username" >Логин</label>
+                    <label className="form-control-label" htmlFor="input-username" >Токен телеграмм бота</label>
                     <Input
-                      name="input-username"
+                      name="input-token"
                       className="form-control-alternative"
-                      value={username}
-                      onChange={this.changeLogin}
-                      placeholder="Введите логин"
+                      value={token}
+                      onChange={this.changeToken}
+                      placeholder="000000000:XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
                       type="text"
                     />
                   </FormGroup>
                   <FormGroup>
-                    <label className="form-control-label" htmlFor="input-firstname" >Имя</label>
+                    <label className="form-control-label" htmlFor="input-firstname" >ID гугл папки</label>
                     <Input
-                      name="input-firstname"
+                      name="input-googleFolder"
                       className="form-control-alternative"
-                      value={firstname}
-                      onChange={this.changeName}
-                      placeholder="Введите имя"
+                      value={googleFolder}
+                      onChange={this.changeGoogleFolder}
+                      placeholder="Введите ID гугл папки<"
                       type="text"
                     />
                   </FormGroup>
                   <FormGroup>
-                    <label className="form-control-label" htmlFor="input-lastname" >Фамилия</label>
+                    <label className="form-control-label" htmlFor="input-lastname" >Порт сервиса АПИ</label>
                     <Input
-                      name="input-lastname"
+                      name="input-hostService"
                       className="form-control-alternative"
-                      value={lastname}
-                      onChange={this.changeLastName}
-                      placeholder="Введите фамилия"
+                      value={hostService.replace(/([\d].[\d].[\d].[\d]:)/g,'')}
+                      onChange={this.changeHostService}
+                      placeholder="Введите Порт сервиса АПИ"
                       type="text"
                     />
+                  </FormGroup>
+                  <FormGroup>
+                    <label className="form-control-label" htmlFor="input-lastname" >Время ожидания реплики бота в секундах</label>
+                    <Input
+                      name="input-durationClients"
+                      className="form-control-alternative"
+                      value={durationClients}
+                      onChange={this.changeDurationClients}
+                      placeholder="Введите Время ожидания реплики бота в секундах"
+                      type="text"
+                    />
+                  </FormGroup>
+                  <FormGroup>
+                    <label className="form-control-label" htmlFor="input-lastname" >Время ожидания ответа менеджера в секундах</label>
+                    <Input
+                      name="input-durationManagers"
+                      className="form-control-alternative"
+                      value={durationManagers}
+                      onChange={this.changeDurationManagers}
+                      placeholder="Введите Время ожидания ответа менеджера в секундах"
+                      type="text"
+                    />
+                  </FormGroup>
+                  <FormGroup>
+                    <label className="form-control-label" htmlFor="input-lastname" >URL сервиса</label>
+                    <Input
+                      name="input-domainAPI"
+                      className="form-control-alternative"
+                      value={domainAPI}
+                      onChange={this.changeDomainAPI}
+                      placeholder="Введите URL сервиса"
+                      type="text"
+                    />
+                  </FormGroup>
+                  <FormGroup>
+                    <Button color="primary" 
+                      className="form-control-alternative"
+                      onSubmit={this.handlerSave}
+                      type="subnit"
+                    >Сохранить</Button>
                   </FormGroup>
                 </Form>
                 </CardBody>

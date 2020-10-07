@@ -1,7 +1,21 @@
-export const APIURL = 'http://127.0.0.1:8083/';
+export const getURL = () => {
+    if(localStorage) {
+        const APIURL = localStorage.getItem('serviceUrl');
+        if(APIURL) {
+            return APIURL;
+        }
+    }
+    return 'http://127.0.0.1:8083/';
+}
+
+export const setURL = url => {
+    if(localStorage) {
+        localStorage.setItem('serviceUrl', url);
+    }
+}
 
 export const request = (url) => {
-    return `${APIURL}${url}`;
+    return `${getURL()}${url}`;
 }
 
 export const getToken = () => {
