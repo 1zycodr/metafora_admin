@@ -26,7 +26,7 @@ class Settings extends React.Component {
         durationManagers: 30,
         durationStart: 10,
         googleFolder: "1Jq0Kxw8KsnPNZNbf-QJZOed4BHo9uFeO",
-        hostService: "0.0.0.0:8083",
+        hostService: "0.0.0.0:8082",
         messageFailManager: "messageFailManager",
         messageFormAuth: "messageFormAuth",
         token: "000000000:XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",

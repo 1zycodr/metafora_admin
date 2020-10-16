@@ -5,7 +5,7 @@ export const getURL = () => {
             return APIURL;
         }
     }
-    return 'http://127.0.0.1:8083/';
+    return 'http://185.144.29.230:8082/';
 }
 
 export const setURL = url => {
