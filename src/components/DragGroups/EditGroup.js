@@ -17,12 +17,17 @@ import {
   InputGroupAddon,
   InputGroupText,
 } from "reactstrap";
+import GroupsPage from "components/GroupsPage/GroupsPage";
 
 class EditGroup extends React.Component {
   constructor(props) {
     super(props)
+    let firstChild = props.group.parent.length === 0 ? false : props.group.parent[0]
+    let secondChild = firstChild ? (firstChild.parent.length === 0 ? false : firstChild.parent[0]) : false
+
     this.state = {
         group: props.group,
+        groups: props.groups,
         selected: [],
         list: [],
         id2List: {
@@ -32,7 +37,17 @@ class EditGroup extends React.Component {
         managers: [],
         searchManager: '',
         searchSelected: '',
+        firstChild: firstChild,
+        secondChild: secondChild,
+        canEditFirst: !secondChild,
+        canEditSecond: firstChild !== false,
     }
+
+    // this.state.firstChild = group.parent.length === 0 ? false : group.parent[0];
+    // this.state.secondChild = ;
+    // this.state.canEditFirst = !this.state.secondChild 
+    // this.state.canEditSecond = (this.state.firstChild !== false)
+
     this.onDragEnd = this.onDragEnd.bind(this);
     this.getList = this.getList.bind(this);
     this.changeTitle = this.changeTitle.bind(this);
@@ -40,6 +55,8 @@ class EditGroup extends React.Component {
     this.createGroup = this.createGroup.bind(this);
     this.filterManagers = this.filterManagers.bind(this);
     this.filterSelector = this.filterSelector.bind(this);
+    this.switchFirst = this.switchFirst.bind(this);
+    this.switchSecond = this.switchSecond.bind(this);
   }
   componentWillMount() {
     ajax({
@@ -170,7 +187,35 @@ class EditGroup extends React.Component {
     group.view = !group.view;
     this.setState({ group });
   }
-  createGroup() {
+
+  saveChild(group) {
+    const { saveGroup } = this.props;
+    const parent = group.parent;
+    let url = request(`group/update`);
+    // Сохранение в беке
+    ajax({
+      url,
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'authorization': getToken(),
+      },
+      body: {...group, view: group.view ? 1 : 0 }
+    })
+    .subscribe(
+      res => {
+        if(res.response.success) {
+          saveGroup({...res.response.data, parent})
+        } else {
+          console.log('Ошибка запроса', res)
+          saveGroup(group)
+        }
+      },
+      error => console.log(error)
+    )
+  }
+
+  createGroup(f=false) {
     const { group } = this.state;
     const { saveGroup, toggle } = this.props;
     const parent = group.parent;
@@ -193,9 +238,11 @@ class EditGroup extends React.Component {
         res => {
           if(res.response.success) {
             saveGroup({...res.response.data, parent})
+            toggle();
           } else {
             console.log('Ошибка запроса', res)
             saveGroup(group)
+            toggle();
           }
         },
         error => console.log(error)
@@ -204,17 +251,80 @@ class EditGroup extends React.Component {
       toggle();
     }
   }
+
   filterSelector(e){
-    // const selected = this.state.selected.filter(manager => manager.firstname.toLowerCase().indexOf(e.target.value.toLowerCase()) !== -1)
     this.setState({ searchSelected: e.target.value });
   }
+
   filterManagers(e){
-    // const managers = this.state.managers.filter(manager => manager.firstname.toLowerCase().indexOf(e.target.value.toLowerCase()) !== -1)
     this.setState({ searchManager: e.target.value });
   }
+  
+  switchFirst(e) {
+    const id = e.target.value === "default" ? false : parseInt(e.target.value, 10)
+    let { canEditFirst, firstChild, group, groups, canEditSecond } = this.state;
+    console.log(groups)
+
+    if (canEditFirst) {
+      if (firstChild) {
+        if (id) {
+          firstChild.parent = []
+          firstChild.parentID = 0
+          groups.push(firstChild)
+          this.saveChild(firstChild, true)
+
+          firstChild = {...groups.filter((gr) => gr.id === id)[0]}
+          groups = groups.filter((gr) => gr.id !== id)
+
+          firstChild.parentID = group.id
+          group.parent = [firstChild]
+
+          this.setState({group, groups, firstChild})
+          this.saveChild(firstChild, true)
+          this.saveChild(group, true)
+        } else {
+          firstChild.parent = []
+          firstChild.parentID = 0
+          groups.push(firstChild)
+          canEditSecond = false
+          group.parent = []
+
+          this.setState({group, firstChild, canEditSecond})
+          this.saveChild(firstChild, true)
+          this.saveChild(group, true)
+        }
+      } else {
+        firstChild = {...groups.filter((gr) => gr.id === id)[0]}
+        groups = groups.filter((gr) => gr.id !== id)
+
+        firstChild.parentID = group.id
+        group.parent = [firstChild]
+        canEditSecond = true
+
+        this.setState({group, groups, firstChild, canEditSecond})
+        this.saveChild(firstChild, true)
+        this.saveChild(group, true)
+      }
+    } else {
+      e.target.value = firstChild.id
+    }
+  }
+
+  switchSecond() {
+
+  }
+  
   render() {
-    const { group: { title, view }, searchSelected, searchManager } = this.state;
+    const { group: {title, view}, searchSelected, searchManager, groups, group} = this.state;
     const { modal, toggle } = this.props;
+    const selStyle = {
+      maxWidth: '475px',
+      marginTop: '20px'
+    };
+    
+
+    const { firstChild, secondChild, canEditFirst, canEditSecond } = this.state
+
     return (
       <Modal size="lg" isOpen={modal} toggle={toggle}>
         <ModalHeader toggle={toggle}>Новая группа</ModalHeader>
@@ -336,6 +446,55 @@ class EditGroup extends React.Component {
                 )}
               </Droppable>
             </DragDropContext>
+            
+          </div>
+
+          <div style={selStyle}>
+            
+            <label
+                  className="form-control-label"
+                >Первая группа</label>
+                <select readOnly={ !canEditFirst } defaultValue={ firstChild ? firstChild.id : "default"} className="form-control" data-toggle="select" title="Simple select" data-live-search="true" data-live-search-placeholder="Search ..." onChange={this.switchFirst}>
+                  {
+                    firstChild ?
+                    <>
+                      <option value="default">Не выбрана</option>
+                      <option value={ firstChild.id }>{ firstChild.title }</option>
+                    </> :
+                    <option value="default">Не выбрана</option> 
+                  }
+                  {
+                    groups.filter((gr) => 
+                      (gr.parentID === 0 && gr.parent.length === 0 && gr.id !== group.id))
+                      .map(
+                        (g, index) => (
+                          <option value={g.id} key={index}>{ g.title }</option>
+                        )
+                      )
+                  }
+                </select>
+                <label
+                  className="form-control-label"
+                >Вторая группа</label>
+                <select readOnly={ !canEditSecond } defaultValue={ secondChild ? secondChild : "default" } className="form-control" data-toggle="select" title="Simple select" data-live-search="true" data-live-search-placeholder="Search ..." onChange={this.switchSecond}>
+                  {
+                    secondChild ?
+                    <>
+                      <option value="default">Не выбрана</option>
+                      <option value={ secondChild }>{ secondChild.title }</option>
+                    </> :
+                    <option value="default">Не выбрана</option> 
+                  }
+                  {
+                    groups.filter((gr) => 
+                      (gr.parentID === 0 && gr.parent.length === 0 && gr.id !== group.id))
+                      .map(
+                        (g, index) => (
+                          <option value={g} key={index}>{ g.title }</option>
+                        )
+                      )
+                  }
+                </select>
           </div>
         </ModalBody>
         <ModalFooter>

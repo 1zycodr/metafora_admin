@@ -80,6 +80,11 @@ class Groups extends React.Component {
       () => {
         const groups = result.first.map(group => {
           result.last.forEach(last => {
+            result.last.forEach(lst => {
+              if (last.id === lst.parentID && last.parent.length === 0) {
+                last.parent.push(lst)
+              }
+            })
             if(group.id === last.parentID){
               group.parent.push(last);
             }
@@ -104,7 +109,7 @@ class Groups extends React.Component {
                   <h3 className="mb-0">Группы</h3>
                 </CardHeader>
                 <CardBody>
-                  { done ? <Loading /> : <DragTableGroup groups={groups} /> }
+                  { done ? <Loading /> : <DragTableGroup groups={groups} getGroups={this.getGroups} /> }
                 </CardBody>
               </Card>
             </div>
