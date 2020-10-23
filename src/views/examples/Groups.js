@@ -53,11 +53,7 @@ class Groups extends React.Component {
       headers: {
         'Content-Type': 'application/json',
         'authorization': getToken(),
-        // 'credentials': true,
-      },
-      // body: {
-      //   rxjs: 'Hello World!'
-      // }
+      }
     }).pipe(
       switchMap(res => res.response.data),
       map(group => {

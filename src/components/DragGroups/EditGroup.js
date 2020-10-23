@@ -17,7 +17,6 @@ import {
   InputGroupAddon,
   InputGroupText,
 } from "reactstrap";
-import GroupsPage from "components/GroupsPage/GroupsPage";
 
 class EditGroup extends React.Component {
   constructor(props) {

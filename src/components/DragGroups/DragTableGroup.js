@@ -1,38 +1,11 @@
 import React from "react";
-import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import { ajax } from 'rxjs/ajax';
 import { request, getToken } from 'config';
 import { groupBy, map, mergeMap, reduce } from 'rxjs/operators';
-import {
-  Card,
-  CardHeader,
-  CardBody,
-  UncontrolledDropdown,
-  DropdownToggle,
-  DropdownMenu,
-  DropdownItem,
-  Col,
-  Row,
-  Button,
-  Badge,
-  Alert
-} from "reactstrap";
+import { Button, Table, Alert } from "reactstrap";
 import EditGroup from './EditGroup';
 import moment from 'moment';
 import { switchMap } from 'rxjs/operators';
-// reactstrap components
-import { 
-  Container,
-  Table,
-  Modal,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
-  Form,
-  FormGroup,
-  Input
-} from "reactstrap";
-import Header from "components/Headers/Header.js";
 import TableGroup from './TableGroup';
 
 const defaultGroup = {
@@ -64,37 +37,6 @@ class DragTableGroup extends React.Component {
   }
   toggle() {
     this.setState({ modal: !this.state.modal, selectGroup: defaultGroup })
-  }
-  getItemStyle(isDragging, draggableStyle) {
-    return {
-      // some basic styles to make the items look a bit nicer
-      userSelect: "none",
-      padding: 15,
-      margin: `0 0 15px 0`,
-
-      // change background colour if dragging
-      background: isDragging ? "lightgreen" : "grey",
-
-      // styles we need to apply on draggables
-      ...draggableStyle
-    }
-  }
-
-  getListStyle(isDraggingOver) {
-    return {
-      background: isDraggingOver ? "lightblue" : "lightgrey",
-      padding: 15,
-      width: '33.33%',
-    }
-  }
-  
-  getHorizontListStyle(isDraggingOver) {
-    return {
-      background: isDraggingOver ? 'lightblue' : 'lightgrey',
-      display: 'flex',
-      padding: 15,
-      overflow: 'auto',
-    }
   }
 
   move(source, destination, droppableSource, droppableDestination) {
@@ -292,12 +234,8 @@ class DragTableGroup extends React.Component {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        'authorization': getToken(),
-        // 'credentials': true,
-      },
-      // body: {
-      //   rxjs: 'Hello World!'
-      // }
+        'authorization': getToken()
+      }
     }).pipe(
       switchMap(res => res.response.data),
       map(group => {
@@ -396,14 +334,15 @@ class DragTableGroup extends React.Component {
           />
         ) : (<></>)}
         <Alert color={color} isOpen={open} toggle={this.closeAlert}>{title}</Alert>
-      <Header />
-        {/* Page content */}
-        <Container className="mt--7" fluid>
-          <Row>
-            <div className="col">
-              <Card className="shadow">
-                <CardHeader className="border-0">
-                <h2>Группы</h2>
+        <Table className="align-items-center table-flush" responsive>
+          <thead className="thead-light">
+            <tr>
+              <th>Имя</th>
+              <th>Название</th>
+              <th>Тип</th>
+              <th>Менеджеры</th>
+              <th>Дочерние группы</th>
+              <th scope="col">
                 <Button 
                 color="success"
                 onClick={this.toggle}
@@ -411,220 +350,31 @@ class DragTableGroup extends React.Component {
                 size="sm">
                   <i className="ni ni-fat-add" />
                 </Button>
-                </CardHeader>
-                <Table className="align-items-center table-flush" responsive>
-                  <thead className="thead-light">
-                      <tr>
-                          <th>Имя</th>
-                          <th>Название</th>
-                          <th>Тип</th>
-                          <th>Менеджеры</th>
-                          <th>Дочерние группы</th>
-                          <th scope="col" />
-                      </tr>
-                  </thead>
-                  <tbody>
-                      {
-                         groups.map(
-                           (group, index) => {
-                              return (<TableGroup 
-                                group={ group }
-                                name={ group.name }
-                                title={ group.title }
-                                type={ group.view ? 'Публичная' : 'Приватная' }
-                                managers={ group.managers.length === 0 ? 'Отсутствуют' : group.managers.length }
-                                daughter={ group.parent.length === 1 ? (group.parent[0].parent.length === 1 ? 2 : 1) : 'Отсутствуют' }
-                                key={ index }
-                                deleteGroup={ this.deleteGroup }
-                                changeGroup={ this.changeGroup }
-                              />)
-                           }
-                         )
-                      }
-                  </tbody>
-                </Table>
-              </Card>
-            </div>
-          </Row>
-        </Container>
-        </>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {
+              groups.map(
+                (group, index) => {
+                  return (<TableGroup 
+                    group={ group }
+                    name={ group.name }
+                    title={ group.title }
+                    type={ group.view ? 'Публичная' : 'Приватная' }
+                    managers={ group.managers.length === 0 ? 'Отсутствуют' : group.managers.length }
+                    daughter={ group.parent.length === 1 ? (group.parent[0].parent.length === 1 ? 2 : 1) : 'Отсутствуют' }
+                    key={ index }
+                    deleteGroup={ this.deleteGroup }
+                    changeGroup={ this.changeGroup }
+                  />)
+                }
+              )
+            }
+          </tbody>
+        </Table>
+      </>
     )
-    // return (
-    //   <DragDropContext onDragEnd={this.onDragEnd}>
-        // <EditGroup 
-        //   modal={modal}
-        //   toggle={this.toggle}
-        //   group={selectGroup}
-        //   groups={this.state.groups}
-        //   saveGroup={this.saveGroup}
-        // />
-    //     <Alert color={color} isOpen={open} toggle={this.closeAlert}>{title}</Alert>
-    //     <Droppable key="root" droppableId="root" direction="horizontal">
-    //       {(provided, snapshot) => (
-    //         <div className="dragDropHorisontContext"
-    //           {...provided.droppableProps}
-    //           ref={provided.innerRef}
-    //           style={this.getHorizontListStyle(snapshot.isDraggingOver)}
-    //         >
-    //           <Card className="shadow col">
-    //             <CardHeader className="border-1">
-    //               <Row>
-    //                 <Col className="col-11">
-    //                   <h3 className="mb-0">Родительские группы</h3>
-    //                 </Col>
-    //                 <Col className="text-right col-1">
-    //                   <Button 
-    //                     color="success"
-    //                     onClick={this.toggle}
-    //                     style={{borderRadius: '50%'}}
-    //                     size="sm">
-    //                       <i className="ni ni-fat-add" />
-    //                     </Button>
-    //                 </Col>
-    //               </Row>
-    //             </CardHeader>
-    //             <CardBody>
-    //               {this.state.groups.filter(group => (group.parentID === 0)).map((item, index) => (
-    //                 <Draggable key={`item-${item.id}`} draggableId={`item-${item.id}`} index={index}>
-    //                   {(provided, snapshot) => (
-    //                     <div
-    //                       className="draggableContext col-3"
-    //                       ref={provided.innerRef}
-    //                       {...provided.draggableProps}
-    //                       {...provided.dragHandleProps}
-    //                       // style={this.getItemStyle(snapshot.isDragging, provided.draggableProps.style)}
-    //                     >
-    //                       <Card className="card-stats mb-4 mb-xl-0">
-    //                         <CardHeader className="border-0">
-    //                           <h3 className="mb-0">{item.title}</h3>
-    //                         </CardHeader>
-    //                       </Card>
-    //                     </div>
-    //                   )}
-    //                 </Draggable>
-    //               ))}
-    //             </CardBody>
-    //           </Card>
-    //           {provided.placeholder}
-    //         </div>
-    //       )}
-    //     </Droppable>
-    //     {this.state.groups.map((group, index) => (
-    //       <Droppable key={`droppable-${group.id}`} droppableId={`droppable-${group.id}`}>
-    //         {(provided, snapshot) => (
-    //           <div className="dragDropContext"
-    //             {...provided.droppableProps}
-    //             ref={provided.innerRef}
-    //             style={this.getListStyle(snapshot.isDraggingOver)}
-    //           >
-    //             <Card className="shadow">
-    //               <CardHeader className="border-0">
-    //                 <Row>
-    //                   <Col className="col-10">
-    //                     <h3 className="mb-0">{group.title}</h3>
-    //                   </Col>
-    //                   <Col className="text-right col-2">
-    //                     <UncontrolledDropdown>
-    //                       <DropdownToggle
-    //                         className="btn-icon-only text-light"
-    //                         href="#menu"
-    //                         role="button"
-    //                         size="sm"
-    //                         color=""
-    //                         onClick={e => e.preventDefault()}
-    //                       >
-    //                         <i className="fas fa-ellipsis-v" />
-    //                       </DropdownToggle>
-    //                       <DropdownMenu className="dropdown-menu-arrow" right>
-    //                         <DropdownItem
-    //                           onClick={() => this.changeGroup(group)}
-    //                         >
-    //                           Изменить группу
-    //                         </DropdownItem>
-    //                         <DropdownItem
-    //                           onClick={() => this.deleteGroup(group)}
-    //                         >
-    //                           Удалить группу
-    //                         </DropdownItem>
-    //                       </DropdownMenu>
-    //                     </UncontrolledDropdown>
-    //                   </Col>
-    //                 </Row>
-    //                 <Row>
-    //                   <Col className="col-6">
-    //                     {group.view ? <Badge color="success" pill>Публичная</Badge> : <Badge color="light" pill>Приватная</Badge>}
-    //                   </Col>
-    //                   <Col className="col-6">
-    //                     <Badge color="primary" pill>Менеджеров {group.managers.length}</Badge>
-    //                   </Col>
-    //                 </Row>
-    //               </CardHeader>
-    //               <CardBody className="pt-0 pt-md-4">
-    //                 {group.parent.map((item, index) => (
-    //                   <Draggable key={`item-${item.id}`} draggableId={`item-${item.id}`} index={index}>
-    //                     {(provided, snapshot) => (
-    //                       <div
-    //                         ref={provided.innerRef}
-    //                         {...provided.draggableProps}
-    //                         {...provided.dragHandleProps}
-    //                         // style={this.getItemStyle(snapshot.isDragging, provided.draggableProps.style)}
-    //                       >
-    //                         <Card className="shadow">
-    //                           <CardHeader className="border-0">
-    //                             <Row>
-    //                               <Col className="col-10">
-    //                                 <h3 className="mb-0">{item.title}</h3>
-    //                               </Col>
-    //                               <Col className="text-right col-2">
-    //                                 <UncontrolledDropdown>
-    //                                   <DropdownToggle
-    //                                     className="btn-icon-only text-light"
-    //                                     href="#menu"
-    //                                     role="button"
-    //                                     size="sm"
-    //                                     color=""
-    //                                     onClick={e => e.preventDefault()}
-    //                                   >
-    //                                     <i className="fas fa-ellipsis-v" />
-    //                                   </DropdownToggle>
-    //                                   <DropdownMenu className="dropdown-menu-arrow" right>
-    //                                     <DropdownItem
-    //                                       onClick={() => this.changeGroup(item)}
-    //                                     >
-    //                                       Изменить группу
-    //                                     </DropdownItem>
-    //                                     <DropdownItem
-    //                                       onClick={() => this.deleteGroup(item)}
-    //                                     >
-    //                                       Удалить группу
-    //                                     </DropdownItem>
-    //                                   </DropdownMenu>
-    //                                 </UncontrolledDropdown>
-    //                               </Col>
-    //                             </Row>
-    //                             <Row>
-    //                               <Col className="col-6">
-    //                                 {item.view ? <Badge color="success" pill>Публичная</Badge> : <Badge color="light" pill>Приватная</Badge>}
-    //                               </Col>
-    //                               <Col className="col-6">
-    //                                 <Badge color="primary" pill>Менеджеров {item.managers.length}</Badge>
-    //                               </Col>
-    //                             </Row>
-    //                           </CardHeader>
-    //                         </Card>
-    //                       </div>
-    //                     )}
-    //                   </Draggable>
-    //                 ))}
-    //               </CardBody>
-    //             </Card>
-    //             {provided.placeholder}
-    //           </div>
-    //         )}
-    //       </Droppable>
-    //     ))}
-    //   </DragDropContext>
-    // )
   }
 }
 
