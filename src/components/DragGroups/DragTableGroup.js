@@ -342,7 +342,7 @@ class DragTableGroup extends React.Component {
               <th>Тип</th>
               <th>Менеджеры</th>
               <th>Дочерние группы</th>
-              <th scope="col">
+              <th className="text-right" scope="col">
                 <Button 
                 color="success"
                 onClick={this.toggle}
