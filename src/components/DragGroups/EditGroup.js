@@ -58,6 +58,8 @@ class EditGroup extends React.Component {
     this.switchSecond = this.switchSecond.bind(this);
   }
   componentWillMount() {
+    const { selected } = this.props.controller.getFirstSelectList(this.props.group.id)
+    this.props.controller.getSecondSelectList(selected)
     ajax({
       url: request(`manager`),
       method: 'GET',

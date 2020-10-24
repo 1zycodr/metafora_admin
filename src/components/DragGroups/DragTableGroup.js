@@ -331,6 +331,7 @@ class DragTableGroup extends React.Component {
             group={selectGroup}
             groups={this.state.groups}
             saveGroup={this.saveGroup}
+            controller={ this.props.controller }
           />
         ) : (<></>)}
         <Alert color={color} isOpen={open} toggle={this.closeAlert}>{title}</Alert>

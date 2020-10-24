@@ -29,9 +29,7 @@ import {
 import Header from "components/Headers/Header.js";
 import DragTableGroup from "components/DragGroups/DragTableGroup.js";
 import Loading from "components/Loading.js";
-import { ajax } from 'rxjs/ajax';
-import { groupBy, map, mergeMap, reduce, switchMap } from 'rxjs/operators';
-import { request, getToken } from 'config';
+import Controller from "components/DragGroups/Controller.js";
 
 class Groups extends React.Component {
   constructor(props) {
@@ -40,57 +38,18 @@ class Groups extends React.Component {
       done: true,
       groups: [],
     }
-    this.getGroups = this.getGroups.bind(this);
+    this.controller = new Controller();
+    this.getGroups = this.controller.fetchData.bind(this);
   }
   componentWillMount() {
-    this.getGroups()
+    // Первичный запрос групп
+    this.controller.fetchData();
+    // Тригер получения результата
+    this.controller.doneFetch = groups => {
+      this.setState({ groups, done: false })
+    }
   }
-  getGroups() {
-    const result = { first: [], last: [] };
-    ajax({
-      url: request(`group`),
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'authorization': getToken(),
-      }
-    }).pipe(
-      switchMap(res => res.response.data),
-      map(group => {
-        return {...group, parent: []}
-      }),
-      groupBy(group => group.parentID === 0),
-      mergeMap(group$ =>
-        group$.pipe(reduce((acc, cur) => [...acc, cur], [`${group$.key}`]))
-      ),
-    )
-    .subscribe(
-      arr => {
-        if(arr[0] === "true") {
-          result.first =  arr.slice(1);
-        } else {
-          result.last = arr.slice(1);
-        }
-      },
-      error => console.log(error),
-      () => {
-        const groups = result.first.map(group => {
-          result.last.forEach(last => {
-            result.last.forEach(lst => {
-              if (last.id === lst.parentID && last.parent.length === 0) {
-                last.parent.push(lst)
-              }
-            })
-            if(group.id === last.parentID){
-              group.parent.push(last);
-            }
-          })
-          return group;
-        })
-        this.setState({ groups, done: false })
-      },
-    )
-  }
+
   render() {
     const { done, groups } = this.state;
     return (
@@ -105,7 +64,7 @@ class Groups extends React.Component {
                   <h3 className="mb-0">Группы</h3>
                 </CardHeader>
                 <CardBody>
-                  { done ? <Loading /> : <DragTableGroup groups={groups} getGroups={this.getGroups} /> }
+                  { done ? <Loading /> : <DragTableGroup controller={this.controller} groups={groups} getGroups={this.getGroups} /> }
                 </CardBody>
               </Card>
             </div>
