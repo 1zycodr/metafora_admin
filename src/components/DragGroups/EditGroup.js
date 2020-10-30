@@ -12,6 +12,7 @@ import {
   ModalFooter,
   FormGroup,
   Button,
+  Label,
   Input,
   InputGroup,
   InputGroupAddon,
@@ -21,9 +22,8 @@ import {
 class EditGroup extends React.Component {
   constructor(props) {
     super(props)
-    let firstChild = props.group.parent.length === 0 ? false : props.group.parent[0]
-    let secondChild = firstChild ? (firstChild.parent.length === 0 ? false : firstChild.parent[0]) : false
-
+    // Подготавка списков
+    props.controller.prepareSelectList(this.props.group.id)
     this.state = {
         group: props.group,
         groups: props.groups,
@@ -35,18 +35,10 @@ class EditGroup extends React.Component {
         },
         managers: [],
         searchManager: '',
-        searchSelected: '',
-        firstChild: firstChild,
-        secondChild: secondChild,
-        canEditFirst: !secondChild,
-        canEditSecond: firstChild !== false,
+        searchSelected: '',    
+        first: props.controller.getFirstSelectList(),
+        second: props.controller.getSecondSelectList(),
     }
-
-    // this.state.firstChild = group.parent.length === 0 ? false : group.parent[0];
-    // this.state.secondChild = ;
-    // this.state.canEditFirst = !this.state.secondChild 
-    // this.state.canEditSecond = (this.state.firstChild !== false)
-
     this.onDragEnd = this.onDragEnd.bind(this);
     this.getList = this.getList.bind(this);
     this.changeTitle = this.changeTitle.bind(this);
@@ -54,12 +46,10 @@ class EditGroup extends React.Component {
     this.createGroup = this.createGroup.bind(this);
     this.filterManagers = this.filterManagers.bind(this);
     this.filterSelector = this.filterSelector.bind(this);
-    this.switchFirst = this.switchFirst.bind(this);
-    this.switchSecond = this.switchSecond.bind(this);
+    this.changeFirstGroup = this.changeFirstGroup.bind(this);
+    this.changeSecondGroup = this.changeSecondGroup.bind(this);
   }
   componentWillMount() {
-    const { selected } = this.props.controller.getFirstSelectList(this.props.group.id)
-    this.props.controller.getSecondSelectList(selected)
     ajax({
       url: request(`manager`),
       method: 'GET',
@@ -76,16 +66,25 @@ class EditGroup extends React.Component {
       }
     )
   }
-  componentWillReceiveProps(newProps){
+  shouldComponentUpdate(nextProps, nextState){
+    console.log('shouldComponentUpdate', nextProps);
     const newManagers = [];
-    const newSelected = this.state.list.filter(user => {
-      if(newProps.group.managers.indexOf(user.id) !== -1) {
+    nextState.selected = this.state.list.filter(user => {
+      if(nextProps.group.managers.indexOf(user.id) !== -1) {
         newManagers.push(user)
         return false
       }
       return true;
     })
-    this.setState({ group: newProps.group, selected: newSelected, managers: newManagers })
+    nextState.managers = newManagers
+    // this.setState({ 
+    //   group: nextProps.group,
+    //   selected: newSelected,
+    //   managers: newManagers,
+    //   first: nextProps.controller.getFirstSelectList(),
+    //   second: nextProps.controller.getSecondSelectList(),
+    // })
+    return true;
   }
   getItemStyle(isDragging, draggableStyle) {
     const body = document.body;
@@ -216,7 +215,7 @@ class EditGroup extends React.Component {
     )
   }
 
-  createGroup(f=false) {
+  createGroup() {
     const { group } = this.state;
     const { saveGroup, toggle } = this.props;
     const parent = group.parent;
@@ -260,90 +259,64 @@ class EditGroup extends React.Component {
   filterManagers(e){
     this.setState({ searchManager: e.target.value });
   }
-  
-  switchFirst(e) {
-    const id = e.target.value === "default" ? false : parseInt(e.target.value, 10)
-    let { canEditFirst, firstChild, group, groups, canEditSecond } = this.state;
-    console.log(groups)
-
-    if (canEditFirst) {
-      if (firstChild) {
-        if (id) {
-          firstChild.parent = []
-          firstChild.parentID = 0
-          groups.push(firstChild)
-          this.saveChild(firstChild, true)
-
-          firstChild = {...groups.filter((gr) => gr.id === id)[0]}
-          groups = groups.filter((gr) => gr.id !== id)
-
-          firstChild.parentID = group.id
-          group.parent = [firstChild]
-
-          this.setState({group, groups, firstChild})
-          this.saveChild(firstChild, true)
-          this.saveChild(group, true)
-        } else {
-          firstChild.parent = []
-          firstChild.parentID = 0
-          groups.push(firstChild)
-          canEditSecond = false
-          group.parent = []
-
-          this.setState({group, firstChild, canEditSecond})
-          this.saveChild(firstChild, true)
-          this.saveChild(group, true)
-        }
-      } else {
-        firstChild = {...groups.filter((gr) => gr.id === id)[0]}
-        groups = groups.filter((gr) => gr.id !== id)
-
-        firstChild.parentID = group.id
-        group.parent = [firstChild]
-        canEditSecond = true
-
-        this.setState({group, groups, firstChild, canEditSecond})
-        this.saveChild(firstChild, true)
-        this.saveChild(group, true)
-      }
-    } else {
-      e.target.value = firstChild.id
-    }
+  changeFirstGroup(event){
+    const { controller } = this.props;
+    controller.changeFirstGroup(event)
+    this.setState({
+      first: controller.getFirstSelectList(),
+      second: controller.getSecondSelectList(),
+    })
   }
-
-  switchSecond() {
-
+  changeSecondGroup(event){
+    this.props.controller.changeSecondGroup(event)
   }
-  
   render() {
-    const { group: {title, view}, searchSelected, searchManager, groups, group} = this.state;
+    const { group: {title, view}, searchSelected, searchManager, first, second } = this.state;
     const { modal, toggle } = this.props;
-    const selStyle = {
-      maxWidth: '475px',
-      marginTop: '20px'
-    };
-    
-
-    const { firstChild, secondChild, canEditFirst, canEditSecond } = this.state
-
     return (
       <Modal size="lg" isOpen={modal} toggle={toggle}>
         <ModalHeader toggle={toggle}>Новая группа</ModalHeader>
         <ModalBody>
           <div ref={e => this.wrapRef = e}>
             <FormGroup>
-              <label
-                className="form-control-label"
-              >
-                Название новой группы
-              </label>
+              <Label for="title">Название группы</Label>
               <Input
                 className="form-control-alternative"
                 value={title}
                 onChange={this.changeTitle}
-                placeholder="Введите название новой группы"
+                placeholder="Введите название группы"
                 type="text"
+                id="title"
               />
+            </FormGroup>
+            <FormGroup>
+              <Label for="firstLevel">Следущая группа 1-го уровня</Label>
+              <Input 
+                id="firstLevel"
+                defaultValue={first.selected}
+                onChange={this.changeFirstGroup}
+                type="select"
+                disabled={second.selected > 0}
+              >
+                <option value="default">Не выбрана</option>
+                {
+                  first.groups.map(group => <option key={group.id} value={group.id}>{group.title}</option>)
+                }
+              </Input>
+            </FormGroup>
+            <FormGroup>
+              <Label for="secondLevel">Следущая группа 2-го уровня</Label>
+              <Input 
+                id="secondLevel"
+                defaultValue={second.selected}
+                onChange={this.changeSecondGroup}
+                type="select"
+              >
+                <option value="default">Не выбрана</option>
+                {
+                  second.groups.map(group => <option key={group.id} value={group.id}>{group.title}</option>)
+                }
+              </Input>
             </FormGroup>
             <FormGroup check>
               <label
@@ -359,7 +332,6 @@ class EditGroup extends React.Component {
                 Показывать в вопросе бота из какого вы города
               </label>
             </FormGroup>
-            <hr/>
             <FormGroup check>
               <label
                 className="form-control-label"
@@ -446,56 +418,7 @@ class EditGroup extends React.Component {
                   </div>
                 )}
               </Droppable>
-            </DragDropContext>
-            
-          </div>
-
-          <div style={selStyle}>
-            
-            <label
-                  className="form-control-label"
-                >Первая группа</label>
-                <select readOnly={ !canEditFirst } defaultValue={ firstChild ? firstChild.id : "default"} className="form-control" data-toggle="select" title="Simple select" data-live-search="true" data-live-search-placeholder="Search ..." onChange={this.switchFirst}>
-                  {
-                    firstChild ?
-                    <>
-                      <option value="default">Не выбрана</option>
-                      <option value={ firstChild.id }>{ firstChild.title }</option>
-                    </> :
-                    <option value="default">Не выбрана</option> 
-                  }
-                  {
-                    groups.filter((gr) => 
-                      (gr.parentID === 0 && gr.parent.length === 0 && gr.id !== group.id))
-                      .map(
-                        (g, index) => (
-                          <option value={g.id} key={index}>{ g.title }</option>
-                        )
-                      )
-                  }
-                </select>
-                <label
-                  className="form-control-label"
-                >Вторая группа</label>
-                <select readOnly={ !canEditSecond } defaultValue={ secondChild ? secondChild : "default" } className="form-control" data-toggle="select" title="Simple select" data-live-search="true" data-live-search-placeholder="Search ..." onChange={this.switchSecond}>
-                  {
-                    secondChild ?
-                    <>
-                      <option value="default">Не выбрана</option>
-                      <option value={ secondChild }>{ secondChild.title }</option>
-                    </> :
-                    <option value="default">Не выбрана</option> 
-                  }
-                  {
-                    groups.filter((gr) => 
-                      (gr.parentID === 0 && gr.parent.length === 0 && gr.id !== group.id))
-                      .map(
-                        (g, index) => (
-                          <option value={g} key={index}>{ g.title }</option>
-                        )
-                      )
-                  }
-                </select>
+            </DragDropContext>            
           </div>
         </ModalBody>
         <ModalFooter>

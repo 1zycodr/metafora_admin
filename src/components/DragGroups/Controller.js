@@ -10,8 +10,9 @@ import { request, getToken } from 'config';
 export default class Controller {
   constructor() {
     this.collection = [];
-    this.groups = [];
-    this.childrenGroup = [];
+    this.parent = 0;
+    this.first = { groups:[], selected: 0 };
+    this.second = { groups:[], selected: 0 };
     this.loading = false;
     this.doneFetch = (collection) => {console.log(collection)};
   }
@@ -77,8 +78,7 @@ export default class Controller {
     )
   }
   // Список матрешки 1 - го уровня
-  getFirstSelectList(id){
-    console.log("collection", this.collection);
+  prepareSelectList(id){
     const select = {
       groups: [],
       selected: 0,
@@ -109,12 +109,12 @@ export default class Controller {
         select.groups.push(child)
       });
     })
-    console.log(select)
-    return select;
+    this.parent = id;
+    this.first = select;
+    this.prepareSecondSelectList(select.selected)
   }
   // Список матрешки 2 - го уровня
-  getSecondSelectList(id){
-    console.log("collection", this.collection);
+  prepareSecondSelectList(id){
     const select = {
       groups: [],
       selected: 0,
@@ -141,7 +141,31 @@ export default class Controller {
         })
       });
     })
-    console.log(select)
-    return select;
+    this.second = select;
+  }
+  getFirstSelectList() { return this.first }
+  getSecondSelectList() { return this.second }
+  // Изменение группы первого уровня
+  changeFirstGroup(event) {
+    const id = parseInt(event.target.value, 10)
+    // Смена групы 1-го уровня
+    this.collection.forEach((group, index) => {
+      if(group.parent.length > 0 && group.parent[0].id === id){
+        this.collection[index].parent = [];
+      }
+      if(group.id === this.parent){
+        this.first.groups.forEach(child => {
+          if(child.id === id){
+            child.parentID = this.parent
+            this.collection[index].parent[0] = child;
+          }
+        })
+      }
+    })
+    this.prepareSelectList(this.parent);
+  }
+  changeSecondGroup(event) {
+    const id = parseInt(event.target.value, 10)
+    console.log('changeSecondGroup', id)
   }
 }
