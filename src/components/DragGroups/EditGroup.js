@@ -22,8 +22,6 @@ import {
 class EditGroup extends React.Component {
   constructor(props) {
     super(props)
-    // Подготавка списков
-    props.controller.prepareSelectList(this.props.group.id)
     this.state = {
         group: props.group,
         groups: props.groups,
@@ -36,20 +34,28 @@ class EditGroup extends React.Component {
         managers: [],
         searchManager: '',
         searchSelected: '',    
-        first: props.controller.getFirstSelectList(),
-        second: props.controller.getSecondSelectList(),
+        first: [],
+        second: [],
     }
     this.onDragEnd = this.onDragEnd.bind(this);
     this.getList = this.getList.bind(this);
     this.changeTitle = this.changeTitle.bind(this);
     this.changeView = this.changeView.bind(this);
     this.createGroup = this.createGroup.bind(this);
+    this.fetchManagers = this.fetchManagers.bind(this);
     this.filterManagers = this.filterManagers.bind(this);
     this.filterSelector = this.filterSelector.bind(this);
     this.changeFirstGroup = this.changeFirstGroup.bind(this);
     this.changeSecondGroup = this.changeSecondGroup.bind(this);
   }
   componentWillMount() {
+    // Подготавка списков
+    this.prepareSelectList(this.props.group.id)
+    this.fetchManagers();
+  }
+  fetchManagers(){
+    const list = [];
+    const group = this.props.group;
     ajax({
       url: request(`manager`),
       method: 'GET',
@@ -60,31 +66,24 @@ class EditGroup extends React.Component {
     }).pipe(
       switchMap(res => res.response.data),
     ).subscribe(
-      manager => {
-        const list = [...this.state.list, manager]
-        this.setState({selected: list, list})
+      manager => list.push(manager),
+      err => console.log(err),
+      () => {
+        const managers = [];
+        const selected = list.filter(user => {
+          if(group.managers.indexOf(user.id) !== -1) {
+            managers.push(user)
+            return false
+          }
+          return true;
+        })
+        this.setState({
+          list,
+          managers,
+          selected
+        })
       }
     )
-  }
-  shouldComponentUpdate(nextProps, nextState){
-    console.log('shouldComponentUpdate', nextProps);
-    const newManagers = [];
-    nextState.selected = this.state.list.filter(user => {
-      if(nextProps.group.managers.indexOf(user.id) !== -1) {
-        newManagers.push(user)
-        return false
-      }
-      return true;
-    })
-    nextState.managers = newManagers
-    // this.setState({ 
-    //   group: nextProps.group,
-    //   selected: newSelected,
-    //   managers: newManagers,
-    //   first: nextProps.controller.getFirstSelectList(),
-    //   second: nextProps.controller.getSecondSelectList(),
-    // })
-    return true;
   }
   getItemStyle(isDragging, draggableStyle) {
     const body = document.body;
@@ -216,40 +215,34 @@ class EditGroup extends React.Component {
   }
 
   createGroup() {
-    const { group } = this.state;
-    const { saveGroup, toggle } = this.props;
-    const parent = group.parent;
-    if(typeof saveGroup === 'function') {
-      let url = request(`group/create`);
-      if(group.id){
-        url = request(`group/update`);
-      }
-      // Сохранение в беке
-      ajax({
-        url,
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'authorization': getToken(),
-        },
-        body: {...group, view: group.view ? 1 : 0 }
-      })
-      .subscribe(
-        res => {
-          if(res.response.success) {
-            saveGroup({...res.response.data, parent})
-            toggle();
-          } else {
-            console.log('Ошибка запроса', res)
-            saveGroup(group)
-            toggle();
-          }
-        },
-        error => console.log(error)
-      )
-    } else {
-      toggle();
+    const { group, first, second } = this.state;
+    const { toggle, getGroups } = this.props;
+    let url = request(`group/create`);
+    if(group.id){
+      url = request(`group/update`);
     }
+    // Сохранение в беке
+    ajax({
+      url,
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'authorization': getToken(),
+      },
+      body: {...group, view: group.view ? 1 : 0, first: first.selected, second: second.selected }
+    })
+    .subscribe(
+      res => {
+        if(res.response.success) {
+          getGroups();
+          toggle();
+        } else {
+          console.log('Ошибка запроса', res)
+          toggle();
+        }
+      },
+      error => console.log(error)
+    )
   }
 
   filterSelector(e){
@@ -259,17 +252,92 @@ class EditGroup extends React.Component {
   filterManagers(e){
     this.setState({ searchManager: e.target.value });
   }
-  changeFirstGroup(event){
-    const { controller } = this.props;
-    controller.changeFirstGroup(event)
-    this.setState({
-      first: controller.getFirstSelectList(),
-      second: controller.getSecondSelectList(),
+
+  // Список матрешки 1 - го уровня
+  prepareSelectList(id){
+    const select = {
+      groups: [],
+      selected: 0,
+    };
+    this.state.groups.forEach(group => {
+      // В списке должны быть родители без дочерних групп
+      if(group.parent.length === 0) {
+        select.groups.push(group);
+        return
+      }
+      // В списке должны быть все дочерние группы и внучатые группы кроме внука ролителя
+      group.parent.forEach(child => {
+        // Отмечаем текущую дочерную группу как уже выбранного
+        if(child.parentID === id) {
+          select.selected = child.id
+        }
+        // Если внука нет то просто добавляем дочернюю группу
+        if (child.parent.length === 0){
+          select.groups.push(child)
+          return
+        }
+        // Выборка внуков кроме вложенного в дочерную
+        child.parent.forEach(grandson => {
+          if(grandson.parentID !== select.selected){
+            select.groups.push(grandson)
+          }
+        })
+        select.groups.push(child)
+      });
     })
+    this.setState({ first: select })
+    this.prepareSecondSelectList(select.selected)
   }
-  changeSecondGroup(event){
-    this.props.controller.changeSecondGroup(event)
+  // Список матрешки 2 - го уровня
+  prepareSecondSelectList(id){
+    const select = {
+      groups: [],
+      selected: 0,
+    };
+    this.state.groups.forEach(group => {
+      // В списке должны быть родители без дочерних групп
+      if(group.parent.length === 0) {
+        if (group.id !== id) {
+          select.groups.push(group);
+        }
+        return;
+      }
+      // В списке должны быть все дочерние группы без внуков и внучатые группы родителя внука
+      group.parent.forEach(child => {
+        // Если внука нет то просто добавляем дочернюю группу
+        if (child.parent.length === 0){
+          if(child.id !== id) {
+            select.groups.push(child);
+          }
+          return;
+        }
+        // Выборка внуков кроме вложенного в дочерную
+        child.parent.forEach(grandson => {
+          if(grandson.parentID === id){
+            select.selected = grandson.id;
+          } 
+          select.groups.push(grandson);
+        })
+      });
+    })
+    this.setState({ second: select })
   }
+  // Изменение группы первого уровня
+  changeFirstGroup(event) {
+    const id = parseInt(event.target.value, 10) || 0
+    const { first } = this.state;
+    // Смена групы 1-го уровня
+    first.selected = id
+    this.setState({ first })
+  }
+  changeSecondGroup(event) {
+    const id = parseInt(event.target.value, 10) || 0
+    const { second } = this.state;
+    // Смена групы 2-го уровня
+    second.selected = id
+    this.setState({ second })
+  }
+
   render() {
     const { group: {title, view}, searchSelected, searchManager, first, second } = this.state;
     const { modal, toggle } = this.props;
@@ -310,6 +378,7 @@ class EditGroup extends React.Component {
                 id="secondLevel"
                 defaultValue={second.selected}
                 onChange={this.changeSecondGroup}
+                disabled={first.selected === 0}
                 type="select"
               >
                 <option value="default">Не выбрана</option>

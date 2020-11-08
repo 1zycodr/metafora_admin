@@ -29,7 +29,9 @@ import {
 import Header from "components/Headers/Header.js";
 import DragTableGroup from "components/DragGroups/DragTableGroup.js";
 import Loading from "components/Loading.js";
-import Controller from "components/DragGroups/Controller.js";
+import { ajax } from 'rxjs/ajax';
+import { groupBy, map, mergeMap, reduce, switchMap } from 'rxjs/operators';
+import { request, getToken } from 'config';
 
 class Groups extends React.Component {
   constructor(props) {
@@ -38,18 +40,63 @@ class Groups extends React.Component {
       done: true,
       groups: [],
     }
-    this.controller = new Controller();
-    this.getGroups = this.controller.fetchData.bind(this);
   }
   componentWillMount() {
     // Первичный запрос групп
-    this.controller.fetchData();
-    // Тригер получения результата
-    this.controller.doneFetch = groups => {
-      this.setState({ groups, done: false })
-    }
+    this.getGroups();
   }
-
+  getGroups() {
+    console.log('Go for groups', this)
+    // Задача разбить массив на обьект матрешки с вложенностями
+    const result = { first: [], last: [] };
+    this.setState({ done: true })
+    ajax({
+      url: request(`group`),
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'authorization': getToken(),
+      }
+    }).pipe(
+      switchMap(res => res.response.data),
+      // В каждую группу добавляем массив для вложенности
+      map(group => ({...group, parent: []})),
+      // Группировка для родителей и дочерних групп
+      groupBy(group => group.parentID === 0),
+      // Заполняем разделенные массивы
+      mergeMap(group$ => group$.pipe(reduce((acc, cur) => [...acc, cur], [`${group$.key}`]))),
+    )
+    .subscribe(
+      // Распределение групп родителей и детей
+      arr => {
+        if(arr[0] === "true") {
+          result.first =  arr.slice(1);
+        } else {
+          result.last = arr.slice(1);
+        }
+      },
+      // Обработка ошибок
+      error => this.error(error),
+      // Финальная подготовка результата обработки
+      () => {
+        // Массив матрешка в которой
+        const groups = result.first.map(group => {
+          result.last.forEach(last => {
+            result.last.forEach(lst => {
+              if (last.id === lst.parentID && last.parent.length === 0) {
+                last.parent.push(lst)
+              }
+            })
+            if(group.id === last.parentID) {
+              group.parent.push(last);
+            }
+          })
+          return group;
+        })
+        this.setState({ groups, done: false })
+      }
+    )
+  }
   render() {
     const { done, groups } = this.state;
     return (
@@ -64,7 +111,7 @@ class Groups extends React.Component {
                   <h3 className="mb-0">Группы</h3>
                 </CardHeader>
                 <CardBody>
-                  { done ? <Loading /> : <DragTableGroup controller={this.controller} groups={groups} getGroups={this.getGroups} /> }
+                  { done ? <Loading /> : <DragTableGroup groups={groups} getGroups={this.getGroups.bind(this)} /> }
                 </CardBody>
               </Card>
             </div>
