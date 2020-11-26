@@ -131,7 +131,7 @@ class Sidebar extends React.Component {
               <img
                 alt={logo.imgAlt}
                 className="navbar-brand-img"
-                src={logo.imgSrc}
+                src="https://metafora.kz/wp-content/themes/metafora/assets/img/logo.svg"
               />
             </NavbarBrand>
           ) : null}

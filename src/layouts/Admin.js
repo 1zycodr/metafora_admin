@@ -69,6 +69,8 @@ class Admin extends React.Component {
     if(!getToken()) {
       history.push("/auth");
     }
+    if (routes.length == 6)
+      routes.splice(1, 1);
     return (
       <>
         <Sidebar
