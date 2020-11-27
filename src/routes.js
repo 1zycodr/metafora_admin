@@ -70,6 +70,13 @@ var routes = [
     component: Login,
     layout: "/auth"
   },
+  {
+    path: "/",
+    name: "Авторизация",
+    icon: "ni ni-key-25 text-info",
+    component: Login,
+    layout: "/auth"
+  },
   // {
   //   path: "/register",
   //   name: "Регистрация",
